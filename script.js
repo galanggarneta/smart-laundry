@@ -10,7 +10,7 @@
       GOOGLE_SCRIPT_URL: "", // TEMPEL URL WEB APP GOOGLE APPS SCRIPT ANDA DI SINI (contoh: "https://script.google.com/macros/s/AKfycb.../exec")
       NAMA_LAUNDRY: "SmartLaundry",
       SLOGAN_LAUNDRY: "Cepat, Bersih & Wangi",
-      ALAMAT_LAUNDRY: "Jl. Melati No. 12",
+      ALAMAT_LAUNDRY: "Karanganyar Barat depan TK",
       NO_WA_ADMIN: "6281234567890",
       PIN_ADMIN_DEFAULT: "1234",
       TARIF_DEFAULT: {
@@ -1692,6 +1692,7 @@ Terima kasih!`;
       document.getElementById('setting-outlet-name').value = settings.outletName || CONFIG_LAUNDRY.NAMA_LAUNDRY || 'SmartLaundry';
       document.getElementById('setting-admin-pin').value = settings.adminPin || CONFIG_LAUNDRY.PIN_ADMIN_DEFAULT || '1234';
       document.getElementById('setting-admin-wa').value = settings.adminWa || CONFIG_LAUNDRY.NO_WA_ADMIN || '6281234567890';
+      document.getElementById('setting-outlet-address').value = settings.address || CONFIG_LAUNDRY.ALAMAT_LAUNDRY || 'Jl. Melati No. 12';
 
       document.getElementById('rate-cuci_mamel').value = settings.rates.cuci_mamel;
       document.getElementById('rate-cuci_kering').value = settings.rates.cuci_kering;
@@ -1728,10 +1729,12 @@ Terima kasih!`;
       const newOutlet = document.getElementById('setting-outlet-name').value.trim() || CONFIG_LAUNDRY.NAMA_LAUNDRY || 'SmartLaundry';
       const newPin = document.getElementById('setting-admin-pin').value.trim() || CONFIG_LAUNDRY.PIN_ADMIN_DEFAULT || '1234';
       const newAdminWa = document.getElementById('setting-admin-wa').value.trim() || CONFIG_LAUNDRY.NO_WA_ADMIN || '6281234567890';
+      const newAddress = document.getElementById('setting-outlet-address').value.trim() || CONFIG_LAUNDRY.ALAMAT_LAUNDRY || 'Jl. Melati No. 12';
 
       settings.outletName = newOutlet;
       settings.adminPin = newPin;
       settings.adminWa = newAdminWa;
+      settings.address = newAddress;
       settings.rates = {
         cuci_mamel: Number(document.getElementById('rate-cuci_mamel').value) || 0,
         cuci_kering: Number(document.getElementById('rate-cuci_kering').value) || 0,
