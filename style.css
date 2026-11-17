@@ -1,0 +1,36 @@
+    /* Pengaturan dasar mobile-first agar nyaman di iOS Safari & Android Chrome */
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #e2e8f0;
+      -webkit-tap-highlight-color: transparent;
+      overscroll-behavior-y: none;
+    }
+
+    /* Sembunyikan scrollbar horizontal pada filter chip */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    /* Animasi halus untuk transisi tab dan modal */
+    @keyframes fadeSlideUp {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    .animate-fade-up {
+      animation: fadeSlideUp 0.25s ease-out forwards;
+    }
+
+    /* Safe area bottom padding untuk iPhone dengan Home Indicator */
+    .pb-safe {
+      padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+    }
