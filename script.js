@@ -1,108 +1,67 @@
+// =========================================================================
+    // KONFIGURASI MODE DEMO BAWAAN (KOSONG AGAR AMAN SAAT DIBUKA PUBLIK)
     // =========================================================================
-    // KONFIGURASI UTAMA LAUNDRY (EDIT BAGIAN INI SEBELUM UPLOAD KE HOSTING)
-    // =========================================================================
-    // Petunjuk Publikasi Online (Vercel / Netlify / GitHub Pages):
-    // 1. Deploy Google Apps Script Anda sebagai Web App (akses: "Anyone").
-    // 2. Tempel URL Web App yang berakhiran "/exec" di dalam tanda kutip GOOGLE_SCRIPT_URL di bawah.
-    // 3. Sesuaikan nama laundry, alamat, nomor WhatsApp admin, PIN kasir, dan tarif default.
-    // 4. Simpan file HTML ini lalu upload ke hosting gratis pilihan Anda.
     const CONFIG_LAUNDRY = {
-      GOOGLE_SCRIPT_URL: "", // TEMPEL URL WEB APP GOOGLE APPS SCRIPT ANDA DI SINI (contoh: "https://script.google.com/macros/s/AKfycb.../exec")
+      GOOGLE_SCRIPT_URL: "", // DIBIARKAN KOSONG: Setiap pengusaha wajib input URL Sheets-nya di Pengaturan
       NAMA_LAUNDRY: "SmartLaundry",
-      SLOGAN_LAUNDRY: "Cepat, Bersih & Wangi",
-      ALAMAT_LAUNDRY: "Karanganyar Barat depan TK",
-      NO_WA_ADMIN: "6281234567890",
-      PIN_ADMIN_DEFAULT: "1234",
-      TARIF_DEFAULT: {
-        "Cuci Mamel": 4000,
-        "Cuci Kering": 5000,
-        "Cuci Setrika": 7000,
-        "Setrika": 4500,
-        "Tikar": 15000
-      }
+      SLOGAN_LAUNDRY: "Simulasi Sistem Kasir & Nota Digital",
+      ALAMAT_LAUNDRY: "Mode Demo (Belum Terhubung Toko)",
+      NO_WA_ADMIN: "",
+      PIN_ADMIN_DEFAULT: "1234"
     };
 
-    // Kunci penyimpanan localStorage (cache & pengaturan lokal)
-    const STORAGE_KEYS = {
-      ORDERS: 'smartlaundry_orders_v4',
-      SETTINGS: 'smartlaundry_settings_v4',
-      ADMIN_SESSION: 'smartlaundry_admin_unlocked_v4'
+    const SESSION_KEYS = {
+      ORDERS: 'smartlaundry_session_orders',
+      SETTINGS: 'smartlaundry_session_settings',
+      ADMIN_UNLOCKED: 'smartlaundry_session_admin'
     };
 
-    // Konfigurasi default aplikasi yang mewarisi nilai dari CONFIG_LAUNDRY
-    const DEFAULT_SETTINGS = {
-      outletName: CONFIG_LAUNDRY.NAMA_LAUNDRY || 'SmartLaundry',
-      slogan: CONFIG_LAUNDRY.SLOGAN_LAUNDRY || 'Cepat, Bersih & Wangi',
-      address: CONFIG_LAUNDRY.ALAMAT_LAUNDRY || 'Jl. Melati No. 12',
-      adminWa: CONFIG_LAUNDRY.NO_WA_ADMIN || '6281234567890',
-      adminPin: CONFIG_LAUNDRY.PIN_ADMIN_DEFAULT || '1234',
+    // Pengaturan kosong untuk dasbor usaha sebelum terhubung ke Google Sheets
+    const EMPTY_STORE_SETTINGS = {
+      outletName: '',
+      slogan: 'Cepat, Bersih & Wangi',
+      address: '',
+      adminWa: '',
+      adminPin: '',
       scriptUrl: '',
       rates: {
-        cuci_mamel: Number(CONFIG_LAUNDRY.TARIF_DEFAULT["Cuci Mamel"]) || 4000,
-        cuci_kering: Number(CONFIG_LAUNDRY.TARIF_DEFAULT["Cuci Kering"]) || 5000,
-        cuci_setrika: Number(CONFIG_LAUNDRY.TARIF_DEFAULT["Cuci Setrika"]) || 7000,
-        setrika: Number(CONFIG_LAUNDRY.TARIF_DEFAULT["Setrika"]) || 4500,
-        tikar_default: Number(CONFIG_LAUNDRY.TARIF_DEFAULT["Tikar"]) || 15000
+        cuci_mamel: '',
+        cuci_kering: '',
+        cuci_setrika: '',
+        setrika: '',
+        tikar_default: ''
       }
     };
 
-    // 4 Data Contoh Awal dengan skema persis kompatibel dengan kolom Google Sheets
+    // Data simulasi hanya tampil saat Mode Demo (sebelum terhubung ke Google Sheets)
     const INITIAL_SAMPLE_ORDERS = [
       {
-        ID_Nota: 'LND-001',
-        Tanggal_Masuk: '17 Nov 2026, 08:30',
-        Nama_Pelanggan: 'Budi Santoso',
-        No_WA: '081234567890',
+        ID_Nota: 'DEMO-001',
+        Tanggal_Masuk: 'Contoh Simulasi',
+        Nama_Pelanggan: 'Pelanggan Contoh 1',
+        No_WA: '081200000001',
         Jenis_Layanan: 'Cuci Setrika',
-        Berat_Kg: 4.0,
+        Berat_Kg: 3.0,
         Catatan: '',
-        Total_Tagihan: 28000,
-        Uang_Dibayar: 28000,
+        Total_Tagihan: 21000,
+        Uang_Dibayar: 21000,
         Status_Kembalian: 'Lunas',
         Selisih_Uang: 0,
         Status_Pengerjaan: 'Selesai'
       },
       {
-        ID_Nota: 'LND-002',
-        Tanggal_Masuk: '17 Nov 2026, 10:15',
-        Nama_Pelanggan: 'Siti Aminah',
-        No_WA: '085712349876',
+        ID_Nota: 'DEMO-002',
+        Tanggal_Masuk: 'Contoh Simulasi',
+        Nama_Pelanggan: 'Pelanggan Contoh 2',
+        No_WA: '081200000002',
         Jenis_Layanan: 'Karpet',
         Berat_Kg: 0,
-        Catatan: 'Karpet bulu ruang tamu 2x3m',
-        Total_Tagihan: 55000,
-        Uang_Dibayar: 30000,
+        Catatan: 'Contoh karpet ukuran sedang',
+        Total_Tagihan: 40000,
+        Uang_Dibayar: 20000,
         Status_Kembalian: 'Kurang Bayar',
-        Selisih_Uang: 25000,
+        Selisih_Uang: 20000,
         Status_Pengerjaan: 'Diproses'
-      },
-      {
-        ID_Nota: 'LND-003',
-        Tanggal_Masuk: '17 Nov 2026, 13:05',
-        Nama_Pelanggan: 'Rizky Pratama',
-        No_WA: '081398765432',
-        Jenis_Layanan: 'Cuci Mamel',
-        Berat_Kg: 4.8,
-        Catatan: '',
-        Total_Tagihan: 19200,
-        Uang_Dibayar: 50000,
-        Status_Kembalian: 'Kembalian Belum Diberikan',
-        Selisih_Uang: 30800,
-        Status_Pengerjaan: 'Diterima'
-      },
-      {
-        ID_Nota: 'LND-004',
-        Tanggal_Masuk: '16 Nov 2026, 16:40',
-        Nama_Pelanggan: 'Dewi Lestari',
-        No_WA: '082145678901',
-        Jenis_Layanan: 'Tikar',
-        Berat_Kg: 0,
-        Catatan: 'Tikar lipat jumbo',
-        Total_Tagihan: 15000,
-        Uang_Dibayar: 0,
-        Status_Kembalian: 'Belum Bayar',
-        Selisih_Uang: 15000,
-        Status_Pengerjaan: 'Diambil'
       }
     ];
 
@@ -117,28 +76,37 @@
 
     // State Global Aplikasi
     let orders = [];
-    let settings = {};
+    let settings = JSON.parse(JSON.stringify(EMPTY_STORE_SETTINGS));
+    let sharedStoreScriptUrl = '';
     let workFilter = 'Semua';
     let moneyFilter = 'Semua';
     let selectedServiceKey = 'cuci_setrika';
     let currentModalWaText = '';
     let deleteConfirmId = null;
-    let resetDemoConfirmState = false;
     let settlingOrderId = null;
 
     // =========================================================
-    // RESOLUSI URL GOOGLE APPS SCRIPT (PRIORITAS CONFIG_LAUNDRY)
+    // ENCODE & DECODE URL DATABASE TOKO PADA LINK NOTA WHATSAPP
     // =========================================================
-    function hasHardcodedScriptUrl() {
-      return Boolean(
-        CONFIG_LAUNDRY.GOOGLE_SCRIPT_URL &&
-        CONFIG_LAUNDRY.GOOGLE_SCRIPT_URL.trim().startsWith('http')
-      );
+    function decodeStoreParam(encoded) {
+      try {
+        return decodeURIComponent(escape(atob(encoded)));
+      } catch (e) {
+        return '';
+      }
+    }
+
+    function encodeStoreParam(url) {
+      try {
+        return btoa(unescape(encodeURIComponent(url)));
+      } catch (e) {
+        return '';
+      }
     }
 
     function getActiveScriptUrl() {
-      if (hasHardcodedScriptUrl()) {
-        return CONFIG_LAUNDRY.GOOGLE_SCRIPT_URL.trim();
+      if (sharedStoreScriptUrl && sharedStoreScriptUrl.startsWith('http')) {
+        return sharedStoreScriptUrl;
       }
       if (settings.scriptUrl && settings.scriptUrl.trim().startsWith('http')) {
         return settings.scriptUrl.trim();
@@ -151,159 +119,171 @@
     }
 
     // =========================================================
-    // INISIALISASI APLIKASI & SINKRONISASI AWAL
+    // INISIALISASI APLIKASI
     // =========================================================
     async function initApp() {
-      loadLocalState();
+      // Bersihkan sisa penyimpanan lokal lama agar selalu mulai bersih
+      try {
+        localStorage.removeItem('smartlaundry_orders_v4');
+        localStorage.removeItem('smartlaundry_settings_v4');
+        localStorage.removeItem('smartlaundry_orders_v5');
+        localStorage.removeItem('smartlaundry_settings_v5');
+      } catch (e) {}
+
+      loadSessionState();
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const notaParam = urlParams.get('nota');
+      const dbParam = urlParams.get('db');
+
+      // Jika dibuka dari link nota pelanggan (?nota=...&db=...), hubungkan ke database toko tersebut
+      if (dbParam) {
+        const decodedUrl = decodeStoreParam(dbParam);
+        if (decodedUrl && decodedUrl.startsWith('http')) {
+          sharedStoreScriptUrl = decodedUrl;
+          settings.scriptUrl = decodedUrl;
+        }
+      }
+
       applyOutletBranding();
       updateConnectionBadgeUI();
       populateSettingsForm();
       renderPublicQuickChips();
 
-      // Cek apakah ada parameter ?nota=LND-XXX di URL (dari klik link WhatsApp pelanggan)
-      const urlParams = new URLSearchParams(window.location.search);
-      const notaParam = urlParams.get('nota');
-
-      if (notaParam) {
-        document.getElementById('public-search-input').value = notaParam;
-        searchPublicReceipt(notaParam);
-      } else if (orders.length > 0) {
-        document.getElementById('public-search-input').value = orders[0].ID_Nota;
-        searchPublicReceipt(orders[0].ID_Nota);
-      }
-
-      // Jika URL Google Apps Script aktif (dari CONFIG_LAUNDRY atau lokal), otomatis muat data terbaru
       if (isSheetsConnected()) {
         await syncFromGoogleSheets(false);
+        applyOutletBranding();
+        updateConnectionBadgeUI();
+        populateSettingsForm();
+
+        // Pelanggan langsung melihat notanya tanpa diminta PIN
         if (notaParam) {
+          document.getElementById('public-search-input').value = notaParam;
+          searchPublicReceipt(notaParam);
+        }
+      } else {
+        // Mode Demo: Tampilkan contoh nota simulasi
+        orders = JSON.parse(JSON.stringify(INITIAL_SAMPLE_ORDERS));
+        renderPublicQuickChips();
+        if (notaParam) {
+          document.getElementById('public-search-input').value = notaParam;
           searchPublicReceipt(notaParam);
         } else if (orders.length > 0) {
-          const currentInput = document.getElementById('public-search-input').value;
-          searchPublicReceipt(currentInput || orders[0].ID_Nota);
+          document.getElementById('public-search-input').value = orders[0].ID_Nota;
+          searchPublicReceipt(orders[0].ID_Nota);
         }
       }
 
-      // Cek sesi login admin jika sebelumnya sudah dibuka di tab browser yang sama
-      if (sessionStorage.getItem(STORAGE_KEYS.ADMIN_SESSION) === 'true') {
+      // Cek apakah sesi kasir sedang aktif pada tab browser ini
+      if (sessionStorage.getItem(SESSION_KEYS.ADMIN_UNLOCKED) === 'true') {
         enterAdminView();
       }
     }
 
-    function loadLocalState() {
+    function loadSessionState() {
       try {
-        const savedSettings = localStorage.getItem(STORAGE_KEYS.SETTINGS);
+        const savedSettings = sessionStorage.getItem(SESSION_KEYS.SETTINGS);
         if (savedSettings) {
           const parsed = JSON.parse(savedSettings);
           settings = {
-            ...DEFAULT_SETTINGS,
+            ...EMPTY_STORE_SETTINGS,
             ...parsed,
-            rates: { ...DEFAULT_SETTINGS.rates, ...(parsed.rates || {}) }
+            rates: { ...EMPTY_STORE_SETTINGS.rates, ...(parsed.rates || {}) }
           };
         } else {
-          settings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
+          settings = JSON.parse(JSON.stringify(EMPTY_STORE_SETTINGS));
         }
 
-        const savedOrders = localStorage.getItem(STORAGE_KEYS.ORDERS);
-        if (savedOrders) {
+        const savedOrders = sessionStorage.getItem(SESSION_KEYS.ORDERS);
+        if (savedOrders && isSheetsConnected()) {
           orders = JSON.parse(savedOrders);
         } else {
-          orders = JSON.parse(JSON.stringify(INITIAL_SAMPLE_ORDERS));
-          persistOrdersLocal();
+          orders = [];
         }
       } catch (e) {
-        console.error('Gagal memuat state lokal:', e);
-        settings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
-        orders = JSON.parse(JSON.stringify(INITIAL_SAMPLE_ORDERS));
+        settings = JSON.parse(JSON.stringify(EMPTY_STORE_SETTINGS));
+        orders = [];
       }
     }
 
-    function persistOrdersLocal() {
+    function persistSessionState() {
       try {
-        localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(orders));
+        sessionStorage.setItem(SESSION_KEYS.SETTINGS, JSON.stringify(settings));
+        if (isSheetsConnected()) {
+          sessionStorage.setItem(SESSION_KEYS.ORDERS, JSON.stringify(orders));
+        }
       } catch (e) {
-        console.error('Gagal menyimpan cache pesanan:', e);
-      }
-    }
-
-    function persistSettingsLocal() {
-      try {
-        localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
-      } catch (e) {
-        console.error('Gagal menyimpan pengaturan:', e);
+        console.error('Gagal menyimpan sesi:', e);
       }
     }
 
     function applyOutletBranding() {
-      const name = settings.outletName || CONFIG_LAUNDRY.NAMA_LAUNDRY || 'SmartLaundry';
-      const slogan = settings.slogan || CONFIG_LAUNDRY.SLOGAN_LAUNDRY || 'Cepat, Bersih & Wangi';
-      const address = settings.address || CONFIG_LAUNDRY.ALAMAT_LAUNDRY || 'Jl. Melati No. 12';
+      const connected = isSheetsConnected();
+      const name = connected && settings.outletName ? settings.outletName : CONFIG_LAUNDRY.NAMA_LAUNDRY;
+      const slogan = connected && settings.slogan ? settings.slogan : CONFIG_LAUNDRY.SLOGAN_LAUNDRY;
+      const address = connected && settings.address ? settings.address : CONFIG_LAUNDRY.ALAMAT_LAUNDRY;
 
-      document.title = `${name} — Kasir & Cek Nota Digital`;
+      document.title = connected && settings.outletName ? `${name} — Kasir & Cek Nota` : 'SmartLaundry — Mode Demo';
+
       const pubTitle = document.getElementById('public-outlet-name');
       const pubSlogan = document.getElementById('public-outlet-slogan');
       const pubAddress = document.getElementById('public-outlet-address');
+      const pubDemoPill = document.getElementById('public-demo-pill');
+      const pubDemoChipsWrapper = document.getElementById('public-demo-chips-wrapper');
       const admTitle = document.getElementById('admin-outlet-name');
 
       if (pubTitle) pubTitle.textContent = name;
       if (pubSlogan) pubSlogan.textContent = slogan;
       if (pubAddress) pubAddress.innerHTML = `<i class="fa-solid fa-location-dot mr-1"></i>${address}`;
-      if (admTitle) admTitle.textContent = `${name} Kasir`;
+      if (pubDemoPill) pubDemoPill.classList.toggle('hidden', connected);
+      if (pubDemoChipsWrapper) pubDemoChipsWrapper.classList.toggle('hidden', connected);
+      if (admTitle) {
+        admTitle.textContent = connected && settings.outletName ? `${name} Kasir` : 'Dasbor Usaha (Kosong)';
+      }
     }
 
     function updateConnectionBadgeUI() {
       const badge = document.getElementById('db-connection-badge');
       const sourceInfo = document.getElementById('sheets-source-info');
+      const demoWarning = document.getElementById('admin-demo-warning');
 
-      if (hasHardcodedScriptUrl()) {
+      if (isSheetsConnected()) {
         if (badge) {
           badge.className = 'flex items-center gap-1.5 font-bold text-emerald-300';
-          badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400"></span><span>Google Sheets Aktif (Dari Kode HTML)</span>`;
+          badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400"></span><span>Terhubung ke Google Sheets Anda</span>`;
         }
         if (sourceInfo) {
           sourceInfo.className = 'p-3 rounded-2xl border text-xs space-y-1 bg-emerald-50 border-emerald-200 text-emerald-900';
           sourceInfo.innerHTML = `
             <div class="font-extrabold flex items-center gap-1.5">
               <i class="fa-solid fa-circle-check text-emerald-600"></i>
-              <span>Terhubung Permanen via CONFIG_LAUNDRY</span>
+              <span>Database Google Sheets Aktif</span>
             </div>
-            <p class="text-[11px] text-emerald-800">Semua HP pelanggan dan perangkat kasir otomatis terhubung ke Google Sheets Anda.</p>
+            <p class="text-[11px] text-emerald-800">Semua data pesanan, profil outlet, alamat, WA, PIN kasir, dan tarif tersimpan otomatis di Google Sheets Anda.</p>
           `;
         }
-      } else if (isSheetsConnected()) {
-        if (badge) {
-          badge.className = 'flex items-center gap-1.5 font-bold text-sky-300';
-          badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-sky-400"></span><span>Google Sheets Aktif (Pengaturan Lokal)</span>`;
-        }
-        if (sourceInfo) {
-          sourceInfo.className = 'p-3 rounded-2xl border text-xs space-y-1 bg-sky-50 border-sky-200 text-sky-900';
-          sourceInfo.innerHTML = `
-            <div class="font-extrabold flex items-center gap-1.5">
-              <i class="fa-solid fa-laptop-code text-sky-600"></i>
-              <span>Terhubung via URL Uji Coba Browser Ini</span>
-            </div>
-            <p class="text-[11px] text-sky-800">Agar HP pelanggan juga otomatis terhubung setelah web di-online-kan, salin URL ini ke <strong>CONFIG_LAUNDRY.GOOGLE_SCRIPT_URL</strong> di dalam file HTML.</p>
-          `;
-        }
+        if (demoWarning) demoWarning.classList.add('hidden');
       } else {
         if (badge) {
           badge.className = 'flex items-center gap-1.5 font-bold text-amber-300';
-          badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span><span>Mode Demo Lokal (Belum Hubung Sheets)</span>`;
+          badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span><span>Belum Terhubung Google Sheets</span>`;
         }
         if (sourceInfo) {
           sourceInfo.className = 'p-3 rounded-2xl border text-xs space-y-1 bg-amber-50 border-amber-200 text-amber-900';
           sourceInfo.innerHTML = `
             <div class="font-extrabold flex items-center gap-1.5">
               <i class="fa-solid fa-triangle-exclamation text-amber-600"></i>
-              <span>Belum Terhubung ke Google Sheets</span>
+              <span>Wajib Masukkan URL Google Apps Script</span>
             </div>
-            <p class="text-[11px] text-amber-800">Data saat ini hanya tersimpan di memori browser perangkat ini. Masukkan URL Apps Script di bawah untuk uji coba atau di <strong>CONFIG_LAUNDRY</strong> untuk publikasi.</p>
+            <p class="text-[11px] text-amber-800">Dasbor usaha saat ini masih kosong. Tempel URL Web App Google Apps Script milik Anda di bawah lalu klik <strong>Hubungkan Sheets</strong>.</p>
           `;
         }
+        if (demoWarning) demoWarning.classList.remove('hidden');
       }
     }
 
     // =========================================================
-    // INTEGRASI GOOGLE SHEETS (VIA GOOGLE APPS SCRIPT WEB APP)
+    // INTEGRASI GOOGLE SHEETS (DATA & PENGATURAN)
     // =========================================================
     function normalizeSheetRow(row) {
       return {
@@ -326,7 +306,7 @@
       const activeUrl = getActiveScriptUrl();
       if (!activeUrl) {
         if (showFeedback) {
-          showToast('URL Google Apps Script belum diisi di CONFIG_LAUNDRY maupun Pengaturan', 'warning');
+          showToast('Masukkan URL Google Apps Script terlebih dahulu!', 'warning');
         }
         return false;
       }
@@ -339,7 +319,7 @@
         const response = await fetch(fetchUrl, { method: 'GET' });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
-          const result = await response.json();
+        const result = await response.json();
         const rows = Array.isArray(result)
           ? result
           : Array.isArray(result.orders)
@@ -353,9 +333,8 @@
         }
 
         orders = rows.map(normalizeSheetRow).filter((r) => r.ID_Nota);
-        persistOrdersLocal();
 
-        // Muat Pengaturan (Nama, Alamat, WA, PIN, Harga Jasa) dari Google Sheets jika tersedia
+        // Muat Pengaturan (Nama, Alamat, WA, PIN Kasir, Harga Jasa) dari Tab "Pengaturan" di Google Sheets
         if (result.settings && typeof result.settings === 'object') {
           const s = result.settings;
           if (s.Nama_Outlet) settings.outletName = String(s.Nama_Outlet);
@@ -368,23 +347,23 @@
           if (s.Cuci_Setrika !== undefined && s.Cuci_Setrika !== '') settings.rates.cuci_setrika = Number(s.Cuci_Setrika) || 0;
           if (s.Setrika !== undefined && s.Setrika !== '') settings.rates.setrika = Number(s.Setrika) || 0;
           if (s.Tikar_Default !== undefined && s.Tikar_Default !== '') settings.rates.tikar_default = Number(s.Tikar_Default) || 0;
-
-          persistSettingsLocal();
-          applyOutletBranding();
-          populateSettingsForm();
-          renderServiceSelector();
         }
 
+        persistSessionState();
+        applyOutletBranding();
+        updateConnectionBadgeUI();
+        populateSettingsForm();
+        renderServiceSelector();
         renderAdminOrders();
-        renderPublicQuickChips();
+
         if (showFeedback) {
-          showToast(`Berhasil memuat ${orders.length} data dari Google Sheets!`);
+          showToast(`Berhasil memuat ${orders.length} data & pengaturan dari Google Sheets!`);
         }
         return true;
       } catch (err) {
         console.error('Error sync Google Sheets:', err);
         if (showFeedback) {
-          showToast('Gagal memuat dari Google Sheets. Pastikan URL & izin akses "Anyone" benar.', 'error');
+          showToast('Gagal memuat Google Sheets. Periksa URL Web App & izin akses.', 'error');
         }
         return false;
       } finally {
@@ -408,7 +387,7 @@
         });
       } catch (err) {
         console.error(`Gagal mengirim action "${action}" ke Google Sheets:`, err);
-        showToast('Tersimpan lokal, namun gagal sinkron ke Google Sheets', 'warning');
+        showToast('Gagal menyinkronkan ke Google Sheets', 'warning');
       }
     }
 
@@ -469,13 +448,13 @@
     }
 
     // =========================================================
-    // BAGIAN 1: LOGIKA HALAMAN PUBLIK (CEK NOTA DIGITAL)
+    // HALAMAN PUBLIK (CEK NOTA PELANGGAN)
     // =========================================================
     function renderPublicQuickChips() {
       const container = document.getElementById('public-quick-chips');
-      if (!container) return;
+      if (!container || isSheetsConnected()) return;
       container.innerHTML = orders
-        .slice(0, 4)
+        .slice(0, 2)
         .map(
           (o) => `
           <button
@@ -483,7 +462,7 @@
             onclick="quickSearchPublic('${o.ID_Nota}')"
             class="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-ocean-100 text-slate-700 hover:text-ocean-700 text-[11px] font-bold transition"
           >
-            ${o.ID_Nota} (${o.Nama_Pelanggan.split(' ')[0]})
+            ${o.ID_Nota}
           </button>
         `
         )
@@ -530,9 +509,7 @@
                 <i class="fa-solid fa-circle-exclamation text-rose-600 text-sm"></i>
                 <span>Kekurangan Pembayaran: ${formatRupiah(selisih)}</span>
               </div>
-              <p class="text-[11px] text-rose-700 pl-5">
-                Mohon melunasi sisa kekurangan saat pengambilan cucian di kasir.
-              </p>
+              <p class="text-[11px] text-rose-700 pl-5">Mohon melunasi sisa kekurangan saat pengambilan cucian di kasir.</p>
             </div>
           `
         };
@@ -549,15 +526,12 @@
                 <i class="fa-solid fa-coins text-amber-600 text-sm"></i>
                 <span>Ada Sisa Kembalian ${formatRupiah(selisih)} yang belum dikembalikan</span>
               </div>
-              <p class="text-[11px] text-amber-800 pl-5">
-                Tunjukkan nota digital ini kepada kasir untuk mengambil sisa uang kembalian Anda.
-              </p>
+              <p class="text-[11px] text-amber-800 pl-5">Tunjukkan nota digital ini kepada kasir untuk mengambil sisa uang kembalian Anda.</p>
             </div>
           `
         };
       }
 
-      // Default: Belum Bayar
       const due = selisih > 0 ? selisih : Number(order.Total_Tagihan) || 0;
       return {
         badgeClass: 'bg-rose-50 text-rose-700 border-rose-200',
@@ -569,9 +543,7 @@
               <i class="fa-solid fa-wallet text-rose-600 text-sm"></i>
               <span>Tagihan Belum Dibayar: ${formatRupiah(due)}</span>
             </div>
-            <p class="text-[11px] text-rose-700 pl-5">
-              Pembayaran dapat dilakukan di kasir saat pengambilan cucian.
-            </p>
+            <p class="text-[11px] text-rose-700 pl-5">Pembayaran dapat dilakukan di kasir saat pengambilan cucian.</p>
           </div>
         `
       };
@@ -599,8 +571,9 @@
         return matchId || matchPhone;
       });
 
-      const outletName = settings.outletName || CONFIG_LAUNDRY.NAMA_LAUNDRY || 'SmartLaundry';
-      const adminWaPhone = formatPhoneWA(settings.adminWa || CONFIG_LAUNDRY.NO_WA_ADMIN || '6281234567890');
+      const connected = isSheetsConnected();
+      const outletName = connected && settings.outletName ? settings.outletName : CONFIG_LAUNDRY.NAMA_LAUNDRY;
+      const adminWaPhone = formatPhoneWA(settings.adminWa || '');
 
       if (matches.length === 0) {
         resultContainer.innerHTML = `
@@ -609,7 +582,7 @@
               <i class="fa-solid fa-file-circle-question text-xl"></i>
             </div>
             <h3 class="text-sm font-extrabold text-slate-800">Nota Tidak Ditemukan</h3>
-            <p class="text-xs text-slate-500">Periksa kembali Nomor Nota (contoh: <strong>LND-001</strong>) atau Nomor WhatsApp Anda.</p>
+            <p class="text-xs text-slate-500">Periksa kembali Nomor Nota atau Nomor WhatsApp Anda.</p>
           </div>
         `;
         return;
@@ -617,25 +590,35 @@
 
       resultContainer.innerHTML = matches
         .map((found) => {
-          // Stepper status pengerjaan (Diterima -> Diproses -> Selesai, plus Diambil)
           const stepMap = { Diterima: 1, Diproses: 2, Selesai: 3, Diambil: 4 };
           const stepIndex = stepMap[found.Status_Pengerjaan] || 1;
           const progressWidth = stepIndex === 1 ? '0%' : stepIndex === 2 ? '33.3%' : stepIndex === 3 ? '66.6%' : '100%';
 
           const isKiloan = Number(found.Berat_Kg) > 0;
           const specLabel = isKiloan ? 'Berat Cucian' : 'Keterangan';
-          const specValue = isKiloan
-            ? `${found.Berat_Kg} kg`
-            : found.Catatan || 'Layanan satuan (1 pcs)';
+          const specValue = isKiloan ? `${found.Berat_Kg} kg` : found.Catatan || 'Layanan satuan (1 pcs)';
 
           const payInfo = getPublicPaymentBanner(found);
           const askAdminText = encodeURIComponent(
             `Halo Admin *${outletName}*, saya ingin menanyakan pesanan laundry saya dengan No. Nota *#${found.ID_Nota}* atas nama *${found.Nama_Pelanggan}*.`
           );
 
+          const waContactBtn = adminWaPhone
+            ? `
+              <a
+                href="https://wa.me/${adminWaPhone}?text=${askAdminText}"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="w-full py-3 px-4 bg-[#25D366] hover:bg-[#1ebe5d] active:scale-[0.99] text-white font-extrabold text-xs rounded-2xl shadow-sm shadow-emerald-500/25 flex items-center justify-center gap-2 transition"
+              >
+                <i class="fa-brands fa-whatsapp text-base"></i>
+                <span>Hubungi Admin via WA</span>
+              </a>
+            `
+            : '';
+
           return `
             <article class="bg-white rounded-3xl p-5 shadow-md border border-slate-100 space-y-4 animate-fade-up">
-              <!-- Header Nota -->
               <div class="flex items-start justify-between gap-2 border-b border-dashed border-slate-200 pb-3.5">
                 <div>
                   <span class="text-[11px] font-extrabold text-ocean-600 uppercase tracking-wider block">${outletName}</span>
@@ -648,50 +631,36 @@
                 </span>
               </div>
 
-              <!-- Visual Progress Bar Status Pengerjaan -->
               <div class="py-1">
                 <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-3">Status Pengerjaan</span>
                 <div class="grid grid-cols-4 relative">
-                  <!-- Garis penghubung -->
                   <div class="absolute left-6 right-6 top-4 h-1 bg-slate-100 rounded-full z-0">
                     <div class="h-full bg-ocean-600 rounded-full transition-all duration-500" style="width: ${progressWidth}"></div>
                   </div>
 
-                  <!-- Tahap 1: Diterima -->
                   <div class="relative z-10 flex flex-col items-center gap-1.5">
-                    <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shadow-xs ${
-                      stepIndex >= 1 ? 'bg-ocean-600 text-white' : 'bg-slate-100 text-slate-400'
-                    }">
+                    <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shadow-xs ${stepIndex >= 1 ? 'bg-ocean-600 text-white' : 'bg-slate-100 text-slate-400'}">
                       <i class="fa-solid fa-box-open"></i>
                     </div>
                     <span class="text-[10px] font-bold ${stepIndex >= 1 ? 'text-ocean-700' : 'text-slate-400'}">Diterima</span>
                   </div>
 
-                  <!-- Tahap 2: Diproses -->
                   <div class="relative z-10 flex flex-col items-center gap-1.5">
-                    <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shadow-xs ${
-                      stepIndex >= 2 ? 'bg-ocean-600 text-white' : 'bg-slate-100 text-slate-400'
-                    }">
+                    <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shadow-xs ${stepIndex >= 2 ? 'bg-ocean-600 text-white' : 'bg-slate-100 text-slate-400'}">
                       <i class="fa-solid fa-spinner ${found.Status_Pengerjaan === 'Diproses' ? 'fa-spin' : ''}"></i>
                     </div>
                     <span class="text-[10px] font-bold ${stepIndex >= 2 ? 'text-ocean-700' : 'text-slate-400'}">Diproses</span>
                   </div>
 
-                  <!-- Tahap 3: Selesai -->
                   <div class="relative z-10 flex flex-col items-center gap-1.5">
-                    <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shadow-xs ${
-                      stepIndex >= 3 ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-400'
-                    }">
+                    <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shadow-xs ${stepIndex >= 3 ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-400'}">
                       <i class="fa-solid fa-check"></i>
                     </div>
                     <span class="text-[10px] font-bold ${stepIndex >= 3 ? 'text-emerald-700' : 'text-slate-400'}">Selesai</span>
                   </div>
 
-                  <!-- Tahap 4: Diambil -->
                   <div class="relative z-10 flex flex-col items-center gap-1.5">
-                    <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shadow-xs ${
-                      stepIndex >= 4 ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-400'
-                    }">
+                    <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shadow-xs ${stepIndex >= 4 ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-400'}">
                       <i class="fa-solid fa-bag-shopping"></i>
                     </div>
                     <span class="text-[10px] font-bold ${stepIndex >= 4 ? 'text-slate-800' : 'text-slate-400'}">Diambil</span>
@@ -699,43 +668,31 @@
                 </div>
               </div>
 
-              <!-- Rincian Layanan & Keuangan -->
               <div class="bg-slate-50 rounded-2xl p-4 space-y-2.5 border border-slate-100 text-xs">
-                <div class="flex justify-between gap-3">
+                <div class="flex justify-between">
                   <span class="text-slate-500">Nama Pelanggan</span>
-                  <span class="font-extrabold text-slate-800 text-right">${found.Nama_Pelanggan}</span>
+                  <span class="font-bold text-slate-800">${found.Nama_Pelanggan}</span>
                 </div>
-                <div class="flex justify-between gap-3">
+                <div class="flex justify-between">
                   <span class="text-slate-500">Jenis Layanan</span>
-                  <span class="font-bold text-ocean-700 text-right">${found.Jenis_Layanan}</span>
+                  <span class="font-bold text-slate-800">${found.Jenis_Layanan}</span>
                 </div>
-                <div class="flex justify-between gap-3">
-                  <span class="text-slate-500 shrink-0">${specLabel}</span>
-                  <span class="font-bold text-slate-800 text-right">${specValue}</span>
+                <div class="flex justify-between">
+                  <span class="text-slate-500">${specLabel}</span>
+                  <span class="font-bold text-slate-800 text-right max-w-[60%]">${specValue}</span>
                 </div>
                 <div class="border-t border-slate-200 pt-2.5 flex justify-between items-center">
-                  <span class="font-bold text-slate-600">Total Tagihan</span>
-                  <span class="font-extrabold text-sm text-slate-900">${formatRupiah(found.Total_Tagihan)}</span>
+                  <span class="text-slate-600 font-bold">Total Tagihan</span>
+                  <span class="text-sm font-extrabold text-slate-900">${formatRupiah(found.Total_Tagihan)}</span>
                 </div>
                 <div class="flex justify-between items-center">
-                  <span class="font-bold text-slate-600">Uang Dibayar</span>
-                  <span class="font-extrabold text-sm text-slate-800">${formatRupiah(found.Uang_Dibayar)}</span>
+                  <span class="text-slate-500">Uang Dibayar</span>
+                  <span class="font-extrabold text-ocean-700">${formatRupiah(found.Uang_Dibayar)}</span>
                 </div>
               </div>
 
-              <!-- Kotak Peringatan Kekurangan Bayar / Sisa Kembalian Belum Diberikan -->
               ${payInfo.alertHtml}
-
-              <!-- Tombol Hubungi Admin via WhatsApp -->
-              <a
-                href="https://wa.me/${adminWaPhone}?text=${askAdminText}"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="w-full py-3 px-4 bg-[#25D366] hover:bg-[#1ebe5d] active:scale-[0.99] text-white font-extrabold text-xs rounded-2xl shadow-sm shadow-emerald-500/25 flex items-center justify-center gap-2 transition"
-              >
-                <i class="fa-brands fa-whatsapp text-base"></i>
-                <span>Hubungi Admin via WA</span>
-              </a>
+              ${waContactBtn}
             </article>
           `;
         })
@@ -743,7 +700,7 @@
     }
 
     // =========================================================
-    // AUTENTIKASI PIN ADMIN / KASIR
+    // AUTENTIKASI PIN PENGUSAHA / KASIR (SAMA DI SEMUA LAMAN)
     // =========================================================
     function openPinModal() {
       const modal = document.getElementById('pin-modal');
@@ -763,15 +720,15 @@
     function handleVerifyPin(event) {
       event.preventDefault();
       const entered = document.getElementById('admin-pin-input').value.trim();
-      const validPin = String(settings.adminPin || '1234');
+      const validPin = settings.adminPin ? String(settings.adminPin) : String(CONFIG_LAUNDRY.PIN_ADMIN_DEFAULT);
 
       if (entered === validPin) {
-        sessionStorage.setItem(STORAGE_KEYS.ADMIN_SESSION, 'true');
+        sessionStorage.setItem(SESSION_KEYS.ADMIN_UNLOCKED, 'true');
         closePinModal();
         enterAdminView();
-        showToast('Berhasil masuk ke Halaman Admin / Kasir');
+        showToast('Berhasil masuk ke Dasbor Usaha');
       } else {
-        showToast('PIN salah! Gunakan PIN demo 1234', 'error');
+        showToast('PIN salah! Silakan coba lagi.', 'error');
         document.getElementById('admin-pin-input').value = '';
         document.getElementById('admin-pin-input').focus();
       }
@@ -780,101 +737,109 @@
     function enterAdminView() {
       document.getElementById('public-view').classList.add('hidden');
       document.getElementById('admin-view').classList.remove('hidden');
+      updateConnectionBadgeUI();
+
+      // Jika belum terhubung Google Sheets, pastikan daftar pesanan dasbor kosong (tidak memakai data simulasi demo)
+      if (!isSheetsConnected()) {
+        orders = [];
+        switchAdminTab('settings');
+      } else {
+        switchAdminTab('orders');
+      }
+
       renderServiceSelector();
-      selectService('cuci_setrika');
-      updateNextNotaPreview();
+      resetOrderForm();
       renderAdminOrders();
     }
 
     function logoutAdmin() {
-      sessionStorage.removeItem(STORAGE_KEYS.ADMIN_SESSION);
+      // Hapus seluruh sesi usaha agar kembali bersih ke Mode Demo
+      sessionStorage.removeItem(SESSION_KEYS.ADMIN_UNLOCKED);
+      sessionStorage.removeItem(SESSION_KEYS.SETTINGS);
+      sessionStorage.removeItem(SESSION_KEYS.ORDERS);
+
+      sharedStoreScriptUrl = '';
+      settings = JSON.parse(JSON.stringify(EMPTY_STORE_SETTINGS));
+      orders = JSON.parse(JSON.stringify(INITIAL_SAMPLE_ORDERS));
+
+      // Bersihkan parameter URL jika sebelumnya dibuka dari link nota
+      if (window.location.search) {
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+
       document.getElementById('admin-view').classList.add('hidden');
       document.getElementById('public-view').classList.remove('hidden');
+
+      applyOutletBranding();
+      populateSettingsForm();
       renderPublicQuickChips();
-      const currentPubVal = document.getElementById('public-search-input').value;
-      if (currentPubVal) searchPublicReceipt(currentPubVal);
-      showToast('Kembali ke Halaman Publik Pelanggan');
+
+      if (orders.length > 0) {
+        document.getElementById('public-search-input').value = orders[0].ID_Nota;
+        searchPublicReceipt(orders[0].ID_Nota);
+      }
+
+      showToast('Keluar dari dasbor. Aplikasi kembali ke Mode Demo.');
     }
 
     // =========================================================
-    // BAGIAN 2: NAVIGASI TAB ADMIN
+    // NAVIGASI TAB ADMIN / KASIR
     // =========================================================
     function switchAdminTab(tabName) {
-      const tabs = ['orders', 'input', 'settings'];
-      tabs.forEach((t) => {
-        const el = document.getElementById(`admin-tab-${t}`);
-        if (el) el.classList.toggle('hidden', t !== tabName);
+      ['orders', 'input', 'settings'].forEach((t) => {
+        document.getElementById(`admin-tab-${t}`).classList.add('hidden');
       });
+      document.getElementById(`admin-tab-${tabName}`).classList.remove('hidden');
 
       document.querySelectorAll('.admin-nav-btn').forEach((btn) => {
-        const active = btn.getAttribute('data-admintab') === tabName;
-        if (active) {
-          btn.classList.remove('text-slate-500', 'font-medium');
-          btn.classList.add('text-ocean-600', 'bg-ocean-50', 'font-bold');
+        if (btn.dataset.admintab === tabName) {
+          btn.className = 'admin-nav-btn flex flex-col items-center justify-center py-2 px-1 rounded-2xl text-ocean-600 bg-ocean-50 font-bold transition';
         } else {
-          btn.classList.add('text-slate-500', 'font-medium');
-          btn.classList.remove('text-ocean-600', 'bg-ocean-50', 'font-bold');
+          btn.className = 'admin-nav-btn flex flex-col items-center justify-center py-2 px-1 rounded-2xl text-slate-500 hover:text-ocean-600 font-medium transition';
         }
       });
 
       if (tabName === 'input') {
-        renderServiceSelector();
-        updateNextNotaPreview();
+        document.getElementById('preview-nota-badge').textContent = `#${generateNextNotaId()}`;
         calculateFormTotal();
       } else if (tabName === 'orders') {
         renderAdminOrders();
       } else if (tabName === 'settings') {
         populateSettingsForm();
+        updateConnectionBadgeUI();
       }
-
-      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     // =========================================================
-    // INPUT ORDER BARU & KALKULATOR PEMBAYARAN / KEMBALIAN
+    // FORM INPUT ORDER & KALKULATOR PEMBAYARAN
     // =========================================================
     function generateNextNotaId() {
-      if (orders.length === 0) return 'LND-001';
       let maxNum = 0;
       orders.forEach((o) => {
-        const match = String(o.ID_Nota).match(/(\d+)$/);
+        const match = String(o.ID_Nota || '').match(/LND-(\d+)/i);
         if (match) {
-          const num = parseInt(match[1], 10);
-          if (num > maxNum) maxNum = num;
+          const n = parseInt(match[1], 10);
+          if (n > maxNum) maxNum = n;
         }
       });
       return `LND-${String(maxNum + 1).padStart(3, '0')}`;
     }
 
-    function updateNextNotaPreview() {
-      const badge = document.getElementById('preview-nota-badge');
-      if (badge) badge.textContent = `#${generateNextNotaId()}`;
-    }
-
-    function updatePhonePreview() {
-      const raw = document.getElementById('input-hp').value;
-      const preview = document.getElementById('wa-format-preview');
-      const formatted = formatPhoneWA(raw);
-      if (formatted.length >= 4) {
-        preview.textContent = `WA: ${formatted}`;
-        preview.classList.remove('hidden');
-      } else {
-        preview.classList.add('hidden');
-      }
+    function getCurrentUnitRate() {
+      return Number(settings.rates[selectedServiceKey]) || 0;
     }
 
     function renderServiceSelector() {
       const container = document.getElementById('service-selector');
       if (!container) return;
+
       container.innerHTML = SERVICE_ITEMS.map((item) => {
-        const isSelected = item.key === selectedServiceKey;
-        let rateText = '';
+        const active = item.key === selectedServiceKey;
+        let subLabel = 'Input harga manual';
         if (item.type === 'kiloan') {
-          rateText = `${formatRupiah(settings.rates[item.key])}/kg`;
-        } else if (item.key === 'karpet') {
-          rateText = 'Input Manual';
-        } else {
-          rateText = `${formatRupiah(settings.rates.tikar_default)}/pcs`;
+          subLabel = `${formatRupiah(settings.rates[item.key] || 0)}/kg`;
+        } else if (item.key === 'tikar') {
+          subLabel = `Default ${formatRupiah(settings.rates.tikar_default || 0)}`;
         }
 
         return `
@@ -882,19 +847,23 @@
             type="button"
             onclick="selectService('${item.key}')"
             class="p-3 rounded-2xl border text-left transition flex items-start gap-2.5 ${
-              isSelected
-                ? 'bg-ocean-50 border-ocean-600 ring-1 ring-ocean-600 shadow-xs'
+              active
+                ? 'bg-ocean-50 border-ocean-500 ring-2 ring-ocean-500/20'
                 : 'bg-white border-slate-200 hover:border-ocean-300'
             }"
           >
             <div class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
-              isSelected ? 'bg-ocean-600 text-white' : 'bg-slate-100 text-slate-500'
+              active ? 'bg-ocean-600 text-white' : 'bg-slate-100 text-slate-500'
             }">
               <i class="fa-solid ${item.icon} text-xs"></i>
             </div>
             <div class="min-w-0">
-              <div class="text-xs font-extrabold text-slate-800 truncate">${item.label}</div>
-              <div class="text-[11px] font-semibold ${isSelected ? 'text-ocean-700' : 'text-slate-400'}">${rateText}</div>
+              <span class="text-xs font-extrabold block truncate ${active ? 'text-ocean-900' : 'text-slate-800'}">
+                ${item.label}
+              </span>
+              <span class="text-[11px] font-semibold block truncate ${active ? 'text-ocean-600' : 'text-slate-400'}">
+                ${subLabel}
+              </span>
             </div>
           </button>
         `;
@@ -905,36 +874,36 @@
       selectedServiceKey = key;
       renderServiceSelector();
 
-      const serviceObj = SERVICE_ITEMS.find((s) => s.key === key);
+      const item = SERVICE_ITEMS.find((s) => s.key === key);
       const secKiloan = document.getElementById('section-kiloan');
       const secManual = document.getElementById('section-manual-item');
-      const manualInput = document.getElementById('input-manual-price');
-      const labelPrice = document.getElementById('label-manual-price');
-      const hintPrice = document.getElementById('hint-manual-price');
-      const inputNote = document.getElementById('input-item-note');
+      const manualPriceInput = document.getElementById('input-manual-price');
       const btnResetTikar = document.getElementById('btn-reset-tikar-price');
+      const labelManual = document.getElementById('label-manual-price');
+      const hintManual = document.getElementById('hint-manual-price');
+      const noteInput = document.getElementById('input-item-note');
 
-      if (serviceObj.type === 'kiloan') {
+      if (item.type === 'kiloan') {
         secKiloan.classList.remove('hidden');
         secManual.classList.add('hidden');
-        document.getElementById('label-tarif-per-kg').textContent = `${formatRupiah(settings.rates[key])} / kg`;
+        document.getElementById('label-tarif-per-kg').textContent = `${formatRupiah(getCurrentUnitRate())} / kg`;
       } else {
         secKiloan.classList.add('hidden');
         secManual.classList.remove('hidden');
 
-        if (key === 'karpet') {
-          labelPrice.innerHTML = 'Harga Cuci Karpet (Rp) <span class="text-rose-500">*</span>';
-          hintPrice.textContent = 'Ketik langsung nominal harga cuci karpet sesuai kesepakatan dengan pelanggan.';
-          inputNote.placeholder = 'Misal: Karpet bulu ruang tamu 2x3m';
-          btnResetTikar.classList.add('hidden');
-          manualInput.value = '';
-        } else {
-          labelPrice.innerHTML = 'Harga Cuci Tikar (Rp) <span class="text-rose-500">*</span>';
-          hintPrice.textContent = 'Terisi otomatis dari tarif default tikar dan dapat diedit manual jika perlu.';
-          inputNote.placeholder = 'Misal: Tikar lipat jumbo 2 lembar';
+        if (key === 'tikar') {
+          const defTikar = Number(settings.rates.tikar_default) || 0;
+          labelManual.innerHTML = 'Harga Cuci Tikar (Rp) <span class="text-rose-500">*</span>';
+          manualPriceInput.value = defTikar > 0 ? defTikar.toLocaleString('id-ID') : '';
           btnResetTikar.classList.remove('hidden');
-          const defaultTikar = Number(settings.rates.tikar_default) || 0;
-          manualInput.value = defaultTikar > 0 ? defaultTikar.toLocaleString('id-ID') : '';
+          hintManual.textContent = 'Terisi otomatis dari tarif default tikar, dapat diubah manual.';
+          noteInput.placeholder = 'Misal: Tikar lipat jumbo 2x3m';
+        } else {
+          labelManual.innerHTML = 'Harga Cuci Karpet (Rp) <span class="text-rose-500">*</span>';
+          manualPriceInput.value = '';
+          btnResetTikar.classList.add('hidden');
+          hintManual.textContent = 'Ketik langsung nominal harga cuci karpet sesuai kesepakatan.';
+          noteInput.placeholder = 'Misal: Karpet bulu ruang tamu';
         }
       }
 
@@ -942,42 +911,58 @@
     }
 
     function applyDefaultTikarPrice() {
-      const manualInput = document.getElementById('input-manual-price');
-      const defaultTikar = Number(settings.rates.tikar_default) || 0;
-      manualInput.value = defaultTikar > 0 ? defaultTikar.toLocaleString('id-ID') : '';
+      const defTikar = Number(settings.rates.tikar_default) || 0;
+      document.getElementById('input-manual-price').value = defTikar > 0 ? defTikar.toLocaleString('id-ID') : '';
       calculateFormTotal();
-      showToast('Tarif default tikar diterapkan');
     }
 
     function adjustWeight(delta) {
       const input = document.getElementById('input-berat');
       const current = parseFloat(input.value) || 0;
-      const updated = Math.max(0.1, Math.round((current + delta) * 10) / 10);
-      input.value = updated.toFixed(1);
+      const next = Math.max(0.1, Math.round((current + delta) * 10) / 10);
+      input.value = next.toFixed(1);
       calculateFormTotal();
     }
 
-    function calculateFormTotal() {
-      const serviceObj = SERVICE_ITEMS.find((s) => s.key === selectedServiceKey);
-      let total = 0;
-      let summaryText = '';
-
-      if (serviceObj.type === 'kiloan') {
-        const berat = Math.max(0, parseFloat(document.getElementById('input-berat').value) || 0);
-        const ratePerKg = Number(settings.rates[selectedServiceKey]) || 0;
-        total = Math.round(berat * ratePerKg);
-        summaryText = `${serviceObj.label} • ${berat} kg`;
+    function updatePhonePreview() {
+      const raw = document.getElementById('input-hp').value;
+      const previewEl = document.getElementById('wa-format-preview');
+      const formatted = formatPhoneWA(raw);
+      if (formatted.length >= 4) {
+        previewEl.textContent = `WA: ${formatted}`;
+        previewEl.classList.remove('hidden');
       } else {
-        total = parseRupiahInput(document.getElementById('input-manual-price').value);
-        const note = (document.getElementById('input-item-note').value || '').trim();
-        summaryText = note ? `${serviceObj.label} • ${note}` : `${serviceObj.label} • Harga manual`;
+        previewEl.classList.add('hidden');
+      }
+    }
+
+    function getComputedFormTotal() {
+      const item = SERVICE_ITEMS.find((s) => s.key === selectedServiceKey);
+      if (!item) return 0;
+      if (item.type === 'kiloan') {
+        const weight = Math.max(0, parseFloat(document.getElementById('input-berat').value) || 0);
+        return Math.round(weight * getCurrentUnitRate());
+      }
+      return parseRupiahInput(document.getElementById('input-manual-price').value);
+    }
+
+    function calculateFormTotal() {
+      const item = SERVICE_ITEMS.find((s) => s.key === selectedServiceKey);
+      const total = getComputedFormTotal();
+      let detailText = item ? item.label : '';
+
+      if (item && item.type === 'kiloan') {
+        const weight = Math.max(0, parseFloat(document.getElementById('input-berat').value) || 0);
+        detailText = `${item.label} • ${weight.toFixed(1)} kg`;
+      } else if (item) {
+        const note = document.getElementById('input-item-note').value.trim();
+        detailText = note ? `${item.label} • ${note}` : `${item.label} • Satuan`;
       }
 
-      document.getElementById('form-summary-detail').textContent = summaryText;
+      document.getElementById('form-summary-detail').textContent = detailText;
       document.getElementById('form-total-display').textContent = formatRupiah(total);
 
-      evaluatePaymentState(total);
-      return total;
+      evaluatePaymentState();
     }
 
     function handlePaidTyping(el) {
@@ -987,244 +972,434 @@
     }
 
     function setQuickPaid(mode) {
-      const paidInput = document.getElementById('input-uang-dibayar');
-      const total = getCurrentFormTotalValue();
+      const input = document.getElementById('input-uang-dibayar');
+      const total = getComputedFormTotal();
 
-      if (mode === 'zero') {
-        paidInput.value = '';
-      } else if (mode === 'exact') {
-        paidInput.value = total > 0 ? total.toLocaleString('id-ID') : '';
-      } else {
-        paidInput.value = Number(mode).toLocaleString('id-ID');
+      if (mode === 'exact') {
+        input.value = total > 0 ? total.toLocaleString('id-ID') : '';
+      } else if (mode === 'zero') {
+        input.value = '';
+      } else if (typeof mode === 'number') {
+        input.value = mode.toLocaleString('id-ID');
       }
-      evaluatePaymentState(total);
+
+      evaluatePaymentState();
     }
 
-    function getCurrentFormTotalValue() {
-      const serviceObj = SERVICE_ITEMS.find((s) => s.key === selectedServiceKey);
-      if (serviceObj.type === 'kiloan') {
-        const berat = Math.max(0, parseFloat(document.getElementById('input-berat').value) || 0);
-        return Math.round(berat * (Number(settings.rates[selectedServiceKey]) || 0));
-      }
-      return parseRupiahInput(document.getElementById('input-manual-price').value);
-    }
-
-    function evaluatePaymentState(forcedTotal) {
-      const total = typeof forcedTotal === 'number' ? forcedTotal : getCurrentFormTotalValue();
+    function evaluatePaymentState() {
+      const total = getComputedFormTotal();
       const paid = parseRupiahInput(document.getElementById('input-uang-dibayar').value);
-
       const statusBox = document.getElementById('payment-status-box');
       const statusLabel = document.getElementById('payment-status-label');
       const statusAmount = document.getElementById('payment-status-amount');
       const changeBox = document.getElementById('change-decision-box');
       const changeDisplay = document.getElementById('change-amount-display');
-      const changeReturnedCheckbox = document.getElementById('checkbox-change-returned');
+      const changeReturnedChecked = document.getElementById('checkbox-change-returned').checked;
 
-      if (paid === 0) {
+      if (paid <= 0) {
         changeBox.classList.add('hidden');
         statusBox.className = 'p-3 rounded-xl border text-xs font-bold flex items-center justify-between bg-rose-50 border-rose-200 text-rose-700';
         statusLabel.textContent = 'Status: Belum Bayar';
         statusAmount.textContent = `Tagihan: ${formatRupiah(total)}`;
-        return {
-          Uang_Dibayar: 0,
-          Status_Kembalian: 'Belum Bayar',
-          Selisih_Uang: total
-        };
+        return { statusKembalian: 'Belum Bayar', selisihUang: total };
       }
 
       if (paid < total) {
-        const kekurangan = total - paid;
+        const kurang = total - paid;
         changeBox.classList.add('hidden');
         statusBox.className = 'p-3 rounded-xl border text-xs font-bold flex items-center justify-between bg-rose-50 border-rose-200 text-rose-700';
         statusLabel.textContent = 'Status: Kurang Bayar';
-        statusAmount.textContent = `Kekurangan Pelanggan: ${formatRupiah(kekurangan)}`;
-        return {
-          Uang_Dibayar: paid,
-          Status_Kembalian: 'Kurang Bayar',
-          Selisih_Uang: kekurangan
-        };
+        statusAmount.textContent = `Kurang: ${formatRupiah(kurang)}`;
+        return { statusKembalian: 'Kurang Bayar', selisihUang: kurang };
       }
 
       if (paid === total) {
         changeBox.classList.add('hidden');
         statusBox.className = 'p-3 rounded-xl border text-xs font-bold flex items-center justify-between bg-emerald-50 border-emerald-200 text-emerald-700';
-        statusLabel.textContent = 'Status: Lunas (Uang Pas)';
-        statusAmount.textContent = 'Selisih: Rp 0';
-        return {
-          Uang_Dibayar: paid,
-          Status_Kembalian: 'Lunas',
-          Selisih_Uang: 0
-        };
+        statusLabel.textContent = 'Status: Lunas';
+        statusAmount.textContent = 'Uang Pas (Selisih Rp 0)';
+        return { statusKembalian: 'Lunas', selisihUang: 0 };
       }
 
-      // paid > total (Ada Sisa Kembalian)
       const kembalian = paid - total;
       changeBox.classList.remove('hidden');
       changeDisplay.textContent = formatRupiah(kembalian);
 
-      const isReturned = changeReturnedCheckbox ? changeReturnedCheckbox.checked : true;
-      if (!isReturned) {
+      if (changeReturnedChecked) {
+        statusBox.className = 'p-3 rounded-xl border text-xs font-bold flex items-center justify-between bg-emerald-50 border-emerald-200 text-emerald-700';
+        statusLabel.textContent = 'Status: Lunas (Kembalian Diberikan)';
+        statusAmount.textContent = `Kembali: ${formatRupiah(kembalian)}`;
+        return { statusKembalian: 'Lunas', selisihUang: 0 };
+      } else {
         statusBox.className = 'p-3 rounded-xl border text-xs font-bold flex items-center justify-between bg-amber-50 border-amber-300 text-amber-900';
         statusLabel.textContent = 'Status: Kembalian Belum Diberikan';
-        statusAmount.textContent = `Sisa Kembalian: ${formatRupiah(kembalian)}`;
-        return {
-          Uang_Dibayar: paid,
-          Status_Kembalian: 'Kembalian Belum Diberikan',
-          Selisih_Uang: kembalian
-        };
+        statusAmount.textContent = `Tertahan: ${formatRupiah(kembalian)}`;
+        return { statusKembalian: 'Kembalian Belum Diberikan', selisihUang: kembalian };
       }
+    }
 
-      statusBox.className = 'p-3 rounded-xl border text-xs font-bold flex items-center justify-between bg-emerald-50 border-emerald-200 text-emerald-700';
-      statusLabel.textContent = 'Status: Lunas (Kembalian Diberikan)';
-      statusAmount.textContent = `Sisa Kembalian: ${formatRupiah(kembalian)}`;
-      return {
-        Uang_Dibayar: paid,
-        Status_Kembalian: 'Lunas',
-        Selisih_Uang: 0
-      };
+    function resetOrderForm() {
+      const form = document.getElementById('order-form');
+      if (form) form.reset();
+      selectedServiceKey = 'cuci_setrika';
+      renderServiceSelector();
+      selectService('cuci_setrika');
+      document.getElementById('input-berat').value = '1.0';
+      document.getElementById('input-uang-dibayar').value = '';
+      document.getElementById('checkbox-change-returned').checked = true;
+      document.getElementById('wa-format-preview').classList.add('hidden');
+      document.getElementById('preview-nota-badge').textContent = `#${generateNextNotaId()}`;
+      calculateFormTotal();
     }
 
     async function handleSaveOrder(event) {
       event.preventDefault();
 
+      if (!isSheetsConnected()) {
+        showToast('Hubungkan URL Google Sheets terlebih dahulu di Pengaturan!', 'warning');
+        switchAdminTab('settings');
+        return;
+      }
+
       const nama = document.getElementById('input-nama').value.trim();
-      const hp = document.getElementById('input-hp').value.trim();
-      if (!nama || !hp) {
-        showToast('Nama dan Nomor WhatsApp wajib diisi!', 'error');
+      const hpRaw = document.getElementById('input-hp').value.trim();
+      const item = SERVICE_ITEMS.find((s) => s.key === selectedServiceKey);
+      const total = getComputedFormTotal();
+
+      if (!nama || !hpRaw) {
+        showToast('Nama pelanggan dan nomor WhatsApp wajib diisi!', 'error');
         return;
       }
 
-      const serviceObj = SERVICE_ITEMS.find((s) => s.key === selectedServiceKey);
-      const isManualItem = serviceObj.type === 'manual';
-      const beratKg = isManualItem ? 0 : Math.max(0.1, parseFloat(document.getElementById('input-berat').value) || 1);
-      const catatan = isManualItem ? (document.getElementById('input-item-note').value || '').trim() : '';
-      const totalTagihan = getCurrentFormTotalValue();
-
-      if (isManualItem && totalTagihan <= 0) {
-        showToast(`Masukkan harga cuci ${serviceObj.label.toLowerCase()} terlebih dahulu!`, 'error');
-        document.getElementById('input-manual-price').focus();
+      if (total <= 0) {
+        showToast('Nominal total tagihan harus lebih dari Rp 0!', 'error');
         return;
       }
 
-      const paymentEval = evaluatePaymentState(totalTagihan);
+      const paid = parseRupiahInput(document.getElementById('input-uang-dibayar').value);
+      const payEval = evaluatePaymentState();
       const statusPengerjaan = document.querySelector('input[name="status_pengerjaan"]:checked').value;
+      const beratKg = item.type === 'kiloan' ? Math.max(0.1, parseFloat(document.getElementById('input-berat').value) || 0.1) : 0;
+      const catatan = item.type === 'manual' ? document.getElementById('input-item-note').value.trim() : '';
 
       const now = new Date();
-      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-      const pad = (n) => String(n).padStart(2, '0');
-      const tanggalMasuk = `${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}, ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+      const tanggalMasuk = now.toLocaleDateString('id-ID', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
 
       const newOrder = {
         ID_Nota: generateNextNotaId(),
         Tanggal_Masuk: tanggalMasuk,
         Nama_Pelanggan: nama,
-        No_WA: hp,
-        Jenis_Layanan: serviceObj.label,
+        No_WA: formatPhoneWA(hpRaw),
+        Jenis_Layanan: item.label,
         Berat_Kg: beratKg,
         Catatan: catatan,
-        Total_Tagihan: totalTagihan,
-        Uang_Dibayar: paymentEval.Uang_Dibayar,
-        Status_Kembalian: paymentEval.Status_Kembalian,
-        Selisih_Uang: paymentEval.Selisih_Uang,
+        Total_Tagihan: total,
+        Uang_Dibayar: paid,
+        Status_Kembalian: payEval.statusKembalian,
+        Selisih_Uang: payEval.selisihUang,
         Status_Pengerjaan: statusPengerjaan
       };
 
-      const submitBtn = document.getElementById('btn-submit-order');
-      submitBtn.disabled = true;
-      submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i><span>Menyimpan...</span>`;
+      const btn = document.getElementById('btn-submit-order');
+      btn.disabled = true;
 
       orders.unshift(newOrder);
-      persistOrdersLocal();
+      persistSessionState();
       await pushToGoogleSheets('create', newOrder);
 
-      submitBtn.disabled = false;
-      submitBtn.innerHTML = `<i class="fa-solid fa-floppy-disk text-base"></i><span>Simpan Pesanan</span>`;
-
-      // Reset form
-      document.getElementById('order-form').reset();
-      document.getElementById('input-berat').value = '1.0';
-      document.getElementById('input-uang-dibayar').value = '';
-      const chkReturned = document.getElementById('checkbox-change-returned');
-      if (chkReturned) chkReturned.checked = true;
-      document.getElementById('wa-format-preview').classList.add('hidden');
-      selectService('cuci_setrika');
-
-      showToast(`Pesanan #${newOrder.ID_Nota} berhasil disimpan!`);
-      workFilter = 'Semua';
-      moneyFilter = 'Semua';
-      updateFilterChipsUI();
+      btn.disabled = false;
+      resetOrderForm();
       switchAdminTab('orders');
+      showToast(`Pesanan #${newOrder.ID_Nota} berhasil disimpan!`);
     }
 
     // =========================================================
-    // DAFTAR CUCIAN ADMIN: FILTER, AKSI KEUANGAN, & STATUS KERJA
+    // DAFTAR CUCIAN ADMIN & AKSI STATUS / PELUNASAN / WHATSAPP
     // =========================================================
     function setWorkFilter(status) {
       workFilter = status;
-      updateFilterChipsUI();
+      document.querySelectorAll('.work-chip').forEach((chip) => {
+        if (chip.dataset.work === status) {
+          chip.className = 'work-chip shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold bg-ocean-600 text-white shadow-xs transition';
+        } else {
+          chip.className = 'work-chip shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold bg-white text-slate-600 border border-slate-200 transition';
+        }
+      });
       renderAdminOrders();
     }
 
     function setMoneyFilter(status) {
       moneyFilter = status;
-      updateFilterChipsUI();
+      document.querySelectorAll('.money-chip').forEach((chip) => {
+        if (chip.dataset.money === status) {
+          chip.className = 'money-chip shrink-0 px-3 py-1.5 rounded-xl text-[11px] font-bold bg-slate-800 text-white shadow-xs transition';
+        } else {
+          chip.className = 'money-chip shrink-0 px-3 py-1.5 rounded-xl text-[11px] font-semibold bg-white text-slate-700 border border-slate-200 transition';
+        }
+      });
       renderAdminOrders();
     }
 
-    function updateFilterChipsUI() {
-      document.querySelectorAll('.work-chip').forEach((chip) => {
-        const active = chip.getAttribute('data-work') === workFilter;
-        chip.className = active
-          ? 'work-chip shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold bg-ocean-600 text-white shadow-xs transition'
-          : 'work-chip shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold bg-white text-slate-600 border border-slate-200 transition';
+    function updateAdminStats() {
+      let diterima = 0;
+      let diproses = 0;
+      let selesai = 0;
+      let totalTagihan = 0;
+      let totalPiutang = 0;
+      let totalKembalian = 0;
+
+      orders.forEach((o) => {
+        if (o.Status_Pengerjaan === 'Diterima') diterima++;
+        else if (o.Status_Pengerjaan === 'Diproses') diproses++;
+        else if (o.Status_Pengerjaan === 'Selesai') selesai++;
+
+        totalTagihan += Number(o.Total_Tagihan) || 0;
+
+        if (o.Status_Kembalian === 'Kurang Bayar' || o.Status_Kembalian === 'Belum Bayar') {
+          totalPiutang += Number(o.Selisih_Uang) || 0;
+        } else if (o.Status_Kembalian === 'Kembalian Belum Diberikan') {
+          totalKembalian += Number(o.Selisih_Uang) || 0;
+        }
       });
 
-      document.querySelectorAll('.money-chip').forEach((chip) => {
-        const active = chip.getAttribute('data-money') === moneyFilter;
-        chip.className = active
-          ? 'money-chip shrink-0 px-3 py-1.5 rounded-xl text-[11px] font-bold bg-slate-800 text-white shadow-xs transition'
-          : 'money-chip shrink-0 px-3 py-1.5 rounded-xl text-[11px] font-semibold bg-white text-slate-600 border border-slate-200 transition';
+      document.getElementById('stat-count-diterima').textContent = diterima;
+      document.getElementById('stat-count-diproses').textContent = diproses;
+      document.getElementById('stat-count-selesai').textContent = selesai;
+      document.getElementById('stat-total-tagihan').textContent = formatRupiah(totalTagihan);
+      document.getElementById('stat-total-orders').textContent = `${orders.length} Nota`;
+      document.getElementById('stat-total-piutang').textContent = formatRupiah(totalPiutang);
+      document.getElementById('stat-total-kembalian').textContent = formatRupiah(totalKembalian);
+    }
+
+    function renderAdminOrders() {
+      updateAdminStats();
+      const container = document.getElementById('admin-orders-list');
+      if (!container) return;
+
+      const query = (document.getElementById('admin-search-orders').value || '').trim().toLowerCase();
+
+      const filtered = orders.filter((o) => {
+        const matchWork = workFilter === 'Semua' || o.Status_Pengerjaan === workFilter;
+        const matchMoney =
+          moneyFilter === 'Semua' ||
+          (moneyFilter === 'Ada Kembalian' && o.Status_Kembalian === 'Kembalian Belum Diberikan') ||
+          o.Status_Kembalian === moneyFilter;
+
+        const matchQuery =
+          !query ||
+          o.ID_Nota.toLowerCase().includes(query) ||
+          o.Nama_Pelanggan.toLowerCase().includes(query) ||
+          String(o.No_WA || '').includes(query);
+
+        return matchWork && matchMoney && matchQuery;
       });
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="bg-white rounded-3xl p-8 text-center border border-slate-100 space-y-2">
+            <div class="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
+              <i class="fa-solid fa-basket-shopping text-lg"></i>
+            </div>
+            <h3 class="text-sm font-extrabold text-slate-700">Belum Ada Data Cucian</h3>
+            <p class="text-xs text-slate-400">${
+              isSheetsConnected()
+                ? 'Tambahkan pesanan baru lewat tab Input Order di bawah.'
+                : 'Hubungkan URL Google Sheets di menu Pengaturan & Sheets terlebih dahulu.'
+            }</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtered
+        .map((o) => {
+          const isKiloan = Number(o.Berat_Kg) > 0;
+          const detailInfo = isKiloan ? `${o.Berat_Kg} kg` : o.Catatan || 'Satuan';
+
+          let payBadgeClass = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+          let paySummary = 'Lunas';
+          if (o.Status_Kembalian === 'Kurang Bayar') {
+            payBadgeClass = 'bg-rose-50 text-rose-700 border-rose-200';
+            paySummary = `Kurang ${formatRupiah(o.Selisih_Uang)}`;
+          } else if (o.Status_Kembalian === 'Belum Bayar') {
+            payBadgeClass = 'bg-rose-50 text-rose-700 border-rose-200';
+            paySummary = `Belum Bayar ${formatRupiah(o.Selisih_Uang || o.Total_Tagihan)}`;
+          } else if (o.Status_Kembalian === 'Kembalian Belum Diberikan') {
+            payBadgeClass = 'bg-amber-50 text-amber-800 border-amber-300';
+            paySummary = `Kembalian ${formatRupiah(o.Selisih_Uang)}`;
+          }
+
+          const workSteps = ['Diterima', 'Diproses', 'Selesai', 'Diambil'];
+          const workButtons = workSteps
+            .map((st) => {
+              const active = o.Status_Pengerjaan === st;
+              return `
+                <button
+                  type="button"
+                  onclick="updateOrderWorkStatus('${o.ID_Nota}', '${st}')"
+                  class="py-1.5 px-1 rounded-xl text-[10px] font-extrabold border transition ${
+                    active
+                      ? 'bg-ocean-600 text-white border-ocean-600 shadow-xs'
+                      : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                  }"
+                >
+                  ${st}
+                </button>
+              `;
+            })
+            .join('');
+
+          const canSettle = o.Status_Kembalian === 'Kurang Bayar' || o.Status_Kembalian === 'Belum Bayar';
+          const canReturnChange = o.Status_Kembalian === 'Kembalian Belum Diberikan';
+
+          let extraMoneyBtn = '';
+          if (canSettle) {
+            extraMoneyBtn = `
+              <button
+                type="button"
+                onclick="openSettleModal('${o.ID_Nota}')"
+                class="py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-extrabold text-xs rounded-xl transition flex items-center justify-center gap-1.5"
+              >
+                <i class="fa-solid fa-money-bill-wave"></i>
+                <span>Lunasi</span>
+              </button>
+            `;
+          } else if (canReturnChange) {
+            extraMoneyBtn = `
+              <button
+                type="button"
+                onclick="markChangeReturned('${o.ID_Nota}')"
+                class="py-2.5 px-3 bg-amber-500 hover:bg-amber-600 active:scale-95 text-white font-extrabold text-xs rounded-xl transition flex items-center justify-center gap-1.5"
+              >
+                <i class="fa-solid fa-hand-holding-dollar"></i>
+                <span>Kembalikan</span>
+              </button>
+            `;
+          }
+
+          return `
+            <article class="bg-white rounded-3xl p-4 shadow-sm border border-slate-100 space-y-3">
+              <div class="flex items-start justify-between gap-2">
+                <div class="min-w-0">
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs font-extrabold text-ocean-700 bg-ocean-50 px-2 py-0.5 rounded-lg">#${o.ID_Nota}</span>
+                    <span class="text-[11px] text-slate-400 truncate">${o.Tanggal_Masuk}</span>
+                  </div>
+                  <h3 class="text-sm font-extrabold text-slate-900 mt-1 truncate">${o.Nama_Pelanggan}</h3>
+                  <p class="text-xs text-slate-500 font-medium">${o.Jenis_Layanan} • ${detailInfo}</p>
+                </div>
+
+                <span class="px-2.5 py-1 rounded-xl text-[11px] font-extrabold border shrink-0 ${payBadgeClass}">
+                  ${paySummary}
+                </span>
+              </div>
+
+              <div class="bg-slate-50 rounded-2xl px-3 py-2.5 flex items-center justify-between text-xs border border-slate-100">
+                <div>
+                  <span class="text-slate-400 block text-[10px]">Total Tagihan</span>
+                  <span class="font-extrabold text-slate-900">${formatRupiah(o.Total_Tagihan)}</span>
+                </div>
+                <div class="text-right">
+                  <span class="text-slate-400 block text-[10px]">Sudah Dibayar</span>
+                  <span class="font-extrabold text-ocean-700">${formatRupiah(o.Uang_Dibayar)}</span>
+                </div>
+              </div>
+
+              <div>
+                <span class="text-[10px] font-bold text-slate-400 uppercase block mb-1.5">Status Pengerjaan</span>
+                <div class="grid grid-cols-4 gap-1.5">${workButtons}</div>
+              </div>
+
+              <div class="flex items-center gap-2 pt-1 border-t border-slate-100">
+                <button
+                  type="button"
+                  onclick="openWaModal('${o.ID_Nota}')"
+                  class="flex-1 py-2.5 px-3 bg-[#25D366] hover:bg-[#1ebe5d] active:scale-95 text-white font-extrabold text-xs rounded-xl shadow-xs flex items-center justify-center gap-1.5 transition"
+                >
+                  <i class="fa-brands fa-whatsapp text-sm"></i>
+                  <span>Kirim Nota WA</span>
+                </button>
+                ${extraMoneyBtn}
+                <button
+                  type="button"
+                  onclick="handleDeleteOrder('${o.ID_Nota}')"
+                  class="w-9 h-9 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 flex items-center justify-center transition shrink-0"
+                  title="Hapus Pesanan"
+                >
+                  <i class="fa-solid fa-trash-can text-xs"></i>
+                </button>
+              </div>
+            </article>
+          `;
+        })
+        .join('');
     }
 
     async function updateOrderWorkStatus(orderId, newStatus) {
       const idx = orders.findIndex((o) => o.ID_Nota === orderId);
       if (idx === -1) return;
+
       orders[idx].Status_Pengerjaan = newStatus;
-      persistOrdersLocal();
+      persistSessionState();
       renderAdminOrders();
-      showToast(`Status #${orderId} diubah menjadi "${newStatus}"`);
       await pushToGoogleSheets('update', orders[idx]);
+      showToast(`Status #${orderId} diubah ke "${newStatus}"`);
     }
 
     async function markChangeReturned(orderId) {
       const idx = orders.findIndex((o) => o.ID_Nota === orderId);
       if (idx === -1) return;
+
       orders[idx].Status_Kembalian = 'Lunas';
       orders[idx].Selisih_Uang = 0;
-      persistOrdersLocal();
+      persistSessionState();
       renderAdminOrders();
-      showToast(`Kembalian #${orderId} ditandai sudah diberikan (Lunas)!`);
       await pushToGoogleSheets('update', orders[idx]);
+      showToast(`Kembalian #${orderId} ditandai sudah diserahkan`);
     }
 
-    // Modal Pelunasan / Tambah Pembayaran
+    async function handleDeleteOrder(orderId) {
+      if (deleteConfirmId !== orderId) {
+        deleteConfirmId = orderId;
+        showToast(`Klik ikon hapus sekali lagi untuk menghapus #${orderId}`, 'warning');
+        setTimeout(() => {
+          if (deleteConfirmId === orderId) deleteConfirmId = null;
+        }, 3500);
+        return;
+      }
+
+      deleteConfirmId = null;
+      const target = orders.find((o) => o.ID_Nota === orderId);
+      orders = orders.filter((o) => o.ID_Nota !== orderId);
+      persistSessionState();
+      renderAdminOrders();
+      if (target) {
+        await pushToGoogleSheets('delete', target);
+      }
+      showToast(`Nota #${orderId} telah dihapus`);
+    }
+
+    // =========================================================
+    // MODAL PELUNASAN PEMBAYARAN
+    // =========================================================
     function openSettleModal(orderId) {
       const order = orders.find((o) => o.ID_Nota === orderId);
       if (!order) return;
 
       settlingOrderId = orderId;
-      const remaining = Number(order.Selisih_Uang) > 0
-        ? Number(order.Selisih_Uang)
-        : Math.max(0, Number(order.Total_Tagihan) - Number(order.Uang_Dibayar));
+      const due = Math.max(0, (Number(order.Total_Tagihan) || 0) - (Number(order.Uang_Dibayar) || 0));
 
       document.getElementById('settle-modal-subtitle').textContent = `#${order.ID_Nota} • ${order.Nama_Pelanggan}`;
       document.getElementById('settle-total-tagihan').textContent = formatRupiah(order.Total_Tagihan);
       document.getElementById('settle-already-paid').textContent = formatRupiah(order.Uang_Dibayar);
-      document.getElementById('settle-remaining-due').textContent = formatRupiah(remaining);
-
-      const addInput = document.getElementById('settle-add-amount');
-      addInput.value = remaining > 0 ? remaining.toLocaleString('id-ID') : '';
+      document.getElementById('settle-remaining-due').textContent = formatRupiah(due);
+      document.getElementById('settle-add-amount').value = due > 0 ? due.toLocaleString('id-ID') : '';
       document.getElementById('settle-overpay-box').classList.add('hidden');
 
       const modal = document.getElementById('settle-modal');
@@ -1242,10 +1417,9 @@
     function fillExactRemainingDue() {
       const order = orders.find((o) => o.ID_Nota === settlingOrderId);
       if (!order) return;
-      const remaining = Math.max(0, Number(order.Total_Tagihan) - Number(order.Uang_Dibayar));
-      const addInput = document.getElementById('settle-add-amount');
-      addInput.value = remaining.toLocaleString('id-ID');
-      handleSettleTyping(addInput);
+      const due = Math.max(0, (Number(order.Total_Tagihan) || 0) - (Number(order.Uang_Dibayar) || 0));
+      document.getElementById('settle-add-amount').value = due > 0 ? due.toLocaleString('id-ID') : '';
+      document.getElementById('settle-overpay-box').classList.add('hidden');
     }
 
     function handleSettleTyping(el) {
@@ -1254,12 +1428,12 @@
 
       const order = orders.find((o) => o.ID_Nota === settlingOrderId);
       if (!order) return;
-      const remaining = Math.max(0, Number(order.Total_Tagihan) - Number(order.Uang_Dibayar));
-      const overpayBox = document.getElementById('settle-overpay-box');
+      const due = Math.max(0, (Number(order.Total_Tagihan) || 0) - (Number(order.Uang_Dibayar) || 0));
 
-      if (val > remaining) {
+      const overpayBox = document.getElementById('settle-overpay-box');
+      if (val > due) {
         overpayBox.classList.remove('hidden');
-        document.getElementById('settle-overpay-amount').textContent = formatRupiah(val - remaining);
+        document.getElementById('settle-overpay-amount').textContent = formatRupiah(val - due);
       } else {
         overpayBox.classList.add('hidden');
       }
@@ -1277,10 +1451,10 @@
         return;
       }
 
-      const newPaid = Number(order.Uang_Dibayar) + addAmount;
-      const total = Number(order.Total_Tagihan);
-
+      const newPaid = (Number(order.Uang_Dibayar) || 0) + addAmount;
+      const total = Number(order.Total_Tagihan) || 0;
       order.Uang_Dibayar = newPaid;
+
       if (newPaid < total) {
         order.Status_Kembalian = 'Kurang Bayar';
         order.Selisih_Uang = total - newPaid;
@@ -1288,399 +1462,67 @@
         order.Status_Kembalian = 'Lunas';
         order.Selisih_Uang = 0;
       } else {
-        const change = newPaid - total;
-        const mode = document.querySelector('input[name="settle_change_mode"]:checked')?.value || 'given';
-        if (mode === 'pending') {
-          order.Status_Kembalian = 'Kembalian Belum Diberikan';
-          order.Selisih_Uang = change;
-        } else {
+        const changeMode = document.querySelector('input[name="settle_change_mode"]:checked').value;
+        const changeAmt = newPaid - total;
+        if (changeMode === 'given') {
           order.Status_Kembalian = 'Lunas';
           order.Selisih_Uang = 0;
+        } else {
+          order.Status_Kembalian = 'Kembalian Belum Diberikan';
+          order.Selisih_Uang = changeAmt;
         }
       }
 
-      persistOrdersLocal();
-      closeSettleModal();
+      persistSessionState();
       renderAdminOrders();
-      showToast(`Pembayaran #${order.ID_Nota} diperbarui (${order.Status_Kembalian})`);
+      closeSettleModal();
       await pushToGoogleSheets('update', order);
-    }
-
-    async function requestDeleteOrder(orderId) {
-      if (deleteConfirmId === orderId) {
-        const target = orders.find((o) => o.ID_Nota === orderId);
-        orders = orders.filter((o) => o.ID_Nota !== orderId);
-        deleteConfirmId = null;
-        persistOrdersLocal();
-        renderAdminOrders();
-        showToast(`Pesanan #${orderId} dihapus`, 'warning');
-        if (target) {
-          await pushToGoogleSheets('delete', target);
-        }
-      } else {
-        deleteConfirmId = orderId;
-        renderAdminOrders();
-        setTimeout(() => {
-          if (deleteConfirmId === orderId) {
-            deleteConfirmId = null;
-            renderAdminOrders();
-          }
-        }, 3500);
-      }
-    }
-
-    function getWorkBadgeStyle(status) {
-      switch (status) {
-        case 'Diterima':
-          return 'bg-sky-100 text-sky-700 border-sky-200';
-        case 'Diproses':
-          return 'bg-amber-100 text-amber-800 border-amber-200';
-        case 'Selesai':
-          return 'bg-emerald-100 text-emerald-800 border-emerald-200';
-        case 'Diambil':
-          return 'bg-slate-200 text-slate-800 border-slate-300';
-        default:
-          return 'bg-slate-100 text-slate-700 border-slate-200';
-      }
-    }
-
-    function getMoneyBadgeConfig(order) {
-      const st = order.Status_Kembalian;
-      const selisih = Number(order.Selisih_Uang) || 0;
-
-      if (st === 'Lunas') {
-        return {
-          pillClass: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-          icon: 'fa-circle-check',
-          label: 'Lunas',
-          detailBanner: ''
-        };
-      }
-      if (st === 'Kurang Bayar') {
-        return {
-          pillClass: 'bg-rose-50 text-rose-700 border-rose-200',
-          icon: 'fa-circle-exclamation',
-          label: `Kurang ${formatRupiah(selisih)}`,
-          detailBanner: `
-            <div class="bg-rose-50 border border-rose-200 rounded-xl px-3 py-2 flex items-center justify-between gap-2 text-xs text-rose-800">
-              <span class="font-bold"><i class="fa-solid fa-circle-exclamation mr-1 text-rose-600"></i>Kekurangan Pelanggan:</span>
-              <span class="font-extrabold text-rose-700">${formatRupiah(selisih)}</span>
-            </div>
-          `
-        };
-      }
-      if (st === 'Kembalian Belum Diberikan') {
-        return {
-          pillClass: 'bg-amber-50 text-amber-800 border-amber-300',
-          icon: 'fa-coins',
-          label: `Kembalian ${formatRupiah(selisih)}`,
-          detailBanner: `
-            <div class="bg-amber-50 border border-amber-300 rounded-xl px-3 py-2 flex items-center justify-between gap-2 text-xs text-amber-900">
-              <span class="font-bold"><i class="fa-solid fa-coins mr-1 text-amber-600"></i>Kembalian Belum Diberikan:</span>
-              <span class="font-extrabold text-amber-900">${formatRupiah(selisih)}</span>
-            </div>
-          `
-        };
-      }
-      const due = selisih > 0 ? selisih : Number(order.Total_Tagihan) || 0;
-      return {
-        pillClass: 'bg-rose-50 text-rose-700 border-rose-200',
-        icon: 'fa-clock',
-        label: 'Belum Bayar',
-        detailBanner: `
-          <div class="bg-rose-50/70 border border-rose-200 rounded-xl px-3 py-2 flex items-center justify-between gap-2 text-xs text-rose-800">
-            <span class="font-bold"><i class="fa-solid fa-clock mr-1 text-rose-600"></i>Tagihan Belum Dibayar:</span>
-            <span class="font-extrabold text-rose-700">${formatRupiah(due)}</span>
-          </div>
-        `
-      };
-    }
-
-    function renderAdminOrders() {
-      // Hitung ringkasan status pengerjaan & keuangan
-      const countDiterima = orders.filter((o) => o.Status_Pengerjaan === 'Diterima').length;
-      const countDiproses = orders.filter((o) => o.Status_Pengerjaan === 'Diproses').length;
-      const countSelesai = orders.filter((o) => o.Status_Pengerjaan === 'Selesai').length;
-
-      const totalTagihan = orders.reduce((s, o) => s + (Number(o.Total_Tagihan) || 0), 0);
-      const totalPiutang = orders
-        .filter((o) => o.Status_Kembalian === 'Kurang Bayar' || o.Status_Kembalian === 'Belum Bayar')
-        .reduce((s, o) => s + (Number(o.Selisih_Uang) || 0), 0);
-      const totalKembalianTertahan = orders
-        .filter((o) => o.Status_Kembalian === 'Kembalian Belum Diberikan')
-        .reduce((s, o) => s + (Number(o.Selisih_Uang) || 0), 0);
-
-      document.getElementById('stat-count-diterima').textContent = countDiterima;
-      document.getElementById('stat-count-diproses').textContent = countDiproses;
-      document.getElementById('stat-count-selesai').textContent = countSelesai;
-      document.getElementById('stat-total-tagihan').textContent = formatRupiah(totalTagihan);
-      document.getElementById('stat-total-orders').textContent = `${orders.length} Nota`;
-      document.getElementById('stat-total-piutang').textContent = formatRupiah(totalPiutang);
-      document.getElementById('stat-total-kembalian').textContent = formatRupiah(totalKembalianTertahan);
-
-      const keyword = (document.getElementById('admin-search-orders').value || '').toLowerCase().trim();
-      const listContainer = document.getElementById('admin-orders-list');
-
-      const filtered = orders.filter((o) => {
-        const matchWork = workFilter === 'Semua' || o.Status_Pengerjaan === workFilter;
-        const matchMoney =
-          moneyFilter === 'Semua' ||
-          (moneyFilter === 'Ada Kembalian' && o.Status_Kembalian === 'Kembalian Belum Diberikan') ||
-          o.Status_Kembalian === moneyFilter;
-        const matchKey =
-          !keyword ||
-          o.Nama_Pelanggan.toLowerCase().includes(keyword) ||
-          o.ID_Nota.toLowerCase().includes(keyword) ||
-          String(o.No_WA).includes(keyword);
-        return matchWork && matchMoney && matchKey;
-      });
-
-      if (filtered.length === 0) {
-        listContainer.innerHTML = `
-          <div class="bg-white rounded-3xl p-8 text-center border border-slate-100 shadow-xs">
-            <div class="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-3">
-              <i class="fa-solid fa-basket-shopping text-xl"></i>
-            </div>
-            <h3 class="text-sm font-bold text-slate-700">Tidak ada data cucian</h3>
-            <p class="text-xs text-slate-400 mt-1">Ubah filter status atau buat order baru.</p>
-          </div>
-        `;
-        return;
-      }
-
-      listContainer.innerHTML = filtered
-        .map((o) => {
-          const isKiloan = Number(o.Berat_Kg) > 0;
-          const detailLine = isKiloan
-            ? `Berat: ${o.Berat_Kg} kg`
-            : o.Catatan
-            ? `Catatan: ${o.Catatan}`
-            : 'Layanan satuan (1 pcs)';
-
-          const moneyCfg = getMoneyBadgeConfig(o);
-
-          const statusOptions = ['Diterima', 'Diproses', 'Selesai', 'Diambil']
-            .map((st) => `<option value="${st}" ${o.Status_Pengerjaan === st ? 'selected' : ''}>${st}</option>`)
-            .join('');
-
-          // Tombol langkah status pengerjaan berikutnya
-          let nextWorkBtn = '';
-          if (o.Status_Pengerjaan === 'Diterima') {
-            nextWorkBtn = `
-              <button type="button" onclick="updateOrderWorkStatus('${o.ID_Nota}', 'Diproses')" class="px-2.5 py-2.5 bg-amber-50 hover:bg-amber-100 active:scale-95 text-amber-800 border border-amber-200 font-bold text-xs rounded-2xl transition flex items-center gap-1 shrink-0">
-                <span>Diproses</span><i class="fa-solid fa-arrow-right text-[10px]"></i>
-              </button>
-            `;
-          } else if (o.Status_Pengerjaan === 'Diproses') {
-            nextWorkBtn = `
-              <button type="button" onclick="updateOrderWorkStatus('${o.ID_Nota}', 'Selesai')" class="px-2.5 py-2.5 bg-emerald-50 hover:bg-emerald-100 active:scale-95 text-emerald-800 border border-emerald-200 font-bold text-xs rounded-2xl transition flex items-center gap-1 shrink-0">
-                <span>Selesai</span><i class="fa-solid fa-check text-[10px]"></i>
-              </button>
-            `;
-          } else if (o.Status_Pengerjaan === 'Selesai') {
-            nextWorkBtn = `
-              <button type="button" onclick="updateOrderWorkStatus('${o.ID_Nota}', 'Diambil')" class="px-2.5 py-2.5 bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-800 border border-slate-300 font-bold text-xs rounded-2xl transition flex items-center gap-1 shrink-0">
-                <span>Diambil</span><i class="fa-solid fa-bag-shopping text-[10px]"></i>
-              </button>
-            `;
-          }
-
-          // Tombol aksi cepat keuangan
-          let moneyActionBtn = '';
-          if (o.Status_Kembalian === 'Kurang Bayar' || o.Status_Kembalian === 'Belum Bayar') {
-            moneyActionBtn = `
-              <button
-                type="button"
-                onclick="openSettleModal('${o.ID_Nota}')"
-                class="w-full py-2.5 px-3 bg-rose-600 hover:bg-rose-700 active:scale-[0.99] text-white font-extrabold text-xs rounded-2xl shadow-xs flex items-center justify-center gap-1.5 transition"
-              >
-                <i class="fa-solid fa-money-bill-wave"></i>
-                <span>Lunasi / Tambah Bayar</span>
-              </button>
-            `;
-          } else if (o.Status_Kembalian === 'Kembalian Belum Diberikan') {
-            moneyActionBtn = `
-              <button
-                type="button"
-                onclick="markChangeReturned('${o.ID_Nota}')"
-                class="w-full py-2.5 px-3 bg-amber-500 hover:bg-amber-600 active:scale-[0.99] text-white font-extrabold text-xs rounded-2xl shadow-xs flex items-center justify-center gap-1.5 transition"
-              >
-                <i class="fa-solid fa-hand-holding-dollar"></i>
-                <span>Kembalian Sudah Diberikan ✓</span>
-              </button>
-            `;
-          }
-
-          const isConfirmingDelete = deleteConfirmId === o.ID_Nota;
-
-          return `
-            <article class="bg-white rounded-3xl p-4 shadow-sm border border-slate-100 space-y-3 transition">
-              <!-- Baris Atas: No Nota, Tanggal & Badge Status Keuangan -->
-              <div class="flex items-center justify-between gap-2">
-                <div class="flex items-center gap-2 min-w-0">
-                  <span class="text-xs font-extrabold text-ocean-700 bg-ocean-50 px-2.5 py-1 rounded-lg border border-ocean-100 shrink-0">
-                    #${o.ID_Nota}
-                  </span>
-                  <span class="text-[11px] text-slate-400 font-medium truncate">${o.Tanggal_Masuk}</span>
-                </div>
-
-                <span class="px-2.5 py-1 rounded-lg text-[11px] font-extrabold border shrink-0 ${moneyCfg.pillClass}">
-                  <i class="fa-solid ${moneyCfg.icon} mr-1"></i>
-                  ${moneyCfg.label}
-                </span>
-              </div>
-
-              <!-- Info Pelanggan & Ringkasan Tagihan / Dibayar -->
-              <div class="flex items-start justify-between gap-3">
-                <div class="min-w-0">
-                  <h3 class="text-base font-extrabold text-slate-800 truncate">${o.Nama_Pelanggan}</h3>
-                  <p class="text-xs text-slate-500 font-medium flex items-center gap-1.5 mt-0.5">
-                    <i class="fa-brands fa-whatsapp text-emerald-500"></i>
-                    <span>${o.No_WA}</span>
-                  </p>
-                </div>
-                <div class="text-right shrink-0">
-                  <span class="text-[11px] text-slate-400 block font-medium">Tagihan: <strong class="text-slate-800">${formatRupiah(o.Total_Tagihan)}</strong></span>
-                  <span class="text-[11px] text-slate-400 block font-medium">Dibayar: <strong class="text-slate-700">${formatRupiah(o.Uang_Dibayar)}</strong></span>
-                </div>
-              </div>
-
-              <!-- Banner Kekurangan Pembayaran / Kembalian Belum Diberikan -->
-              ${moneyCfg.detailBanner}
-
-              <!-- Rincian Layanan & Status Pengerjaan -->
-              <div class="bg-slate-50 px-3 py-2.5 rounded-2xl border border-slate-100 flex items-center justify-between gap-2">
-                <div class="min-w-0">
-                  <span class="text-xs font-extrabold text-slate-700 block">${o.Jenis_Layanan}</span>
-                  <span class="text-[11px] text-slate-500 font-medium block truncate">${detailLine}</span>
-                </div>
-                <span class="px-2.5 py-1 rounded-lg text-[11px] font-extrabold border shrink-0 ${getWorkBadgeStyle(o.Status_Pengerjaan)}">
-                  ${o.Status_Pengerjaan}
-                </span>
-              </div>
-
-              <!-- Kontrol Ubah Status Pengerjaan & Hapus -->
-              <div class="flex items-center gap-2">
-                <div class="relative flex-1">
-                  <select
-                    onchange="updateOrderWorkStatus('${o.ID_Nota}', this.value)"
-                    aria-label="Ubah Status Pengerjaan"
-                    class="w-full appearance-none bg-slate-100 hover:bg-slate-200/70 text-slate-800 font-bold text-xs py-2.5 pl-3 pr-8 rounded-2xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-ocean-500 cursor-pointer"
-                  >
-                    ${statusOptions}
-                  </select>
-                  <i class="fa-solid fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-500 pointer-events-none"></i>
-                </div>
-
-                ${nextWorkBtn}
-
-                <button
-                  type="button"
-                  onclick="requestDeleteOrder('${o.ID_Nota}')"
-                  title="Hapus pesanan"
-                  class="py-2.5 px-3 rounded-2xl border text-xs font-bold transition active:scale-95 shrink-0 ${
-                    isConfirmingDelete
-                      ? 'bg-rose-600 text-white border-rose-600'
-                      : 'bg-white text-slate-400 hover:text-rose-500 border-slate-200'
-                  }"
-                >
-                  ${isConfirmingDelete ? 'Hapus?' : '<i class="fa-regular fa-trash-can"></i>'}
-                </button>
-              </div>
-
-              <!-- Tombol Aksi Cepat Keuangan (jika ada kekurangan / kembalian tertahan) -->
-              ${moneyActionBtn}
-
-              <!-- Tombol Utama Kirim Info WA (1 Klik) -->
-              <button
-                type="button"
-                onclick="triggerWhatsAppSend('${o.ID_Nota}')"
-                class="w-full py-3 px-4 bg-[#25D366] hover:bg-[#1ebe5d] active:scale-[0.99] text-white font-extrabold text-xs rounded-2xl shadow-sm shadow-emerald-500/25 flex items-center justify-center gap-2 transition"
-              >
-                <i class="fa-brands fa-whatsapp text-base"></i>
-                <span>Kirim Info WA (1 Klik)</span>
-              </button>
-            </article>
-          `;
-        })
-        .join('');
+      showToast(`Pembayaran #${order.ID_Nota} berhasil diperbarui!`);
     }
 
     // =========================================================
-    // NOTIFIKASI WHATSAPP SEMI-OTOMATIS + LINK NOTA DIGITAL
+    // KIRIM NOTA WHATSAPP KE PELANGGAN (TANPA BOCORKAN PIN)
     // =========================================================
-    function buildReceiptShareUrl(notaId) {
-      try {
-        return `${window.location.origin}${window.location.pathname}?nota=${encodeURIComponent(notaId)}`;
-      } catch (e) {
-        return `https://smartlaundry.id/?nota=${encodeURIComponent(notaId)}`;
-      }
-    }
-
-    function buildWhatsAppMessage(order) {
-      const outletName = settings.outletName || 'SmartLaundry';
-      const isKiloan = Number(order.Berat_Kg) > 0;
-      const specLine = isKiloan
-        ? `• Berat Cucian: ${order.Berat_Kg} kg`
-        : order.Catatan
-        ? `• Keterangan: ${order.Catatan}`
-        : `• Satuan: 1 pcs`;
-
-      let salamPembuka = '';
-      if (order.Status_Pengerjaan === 'Selesai') {
-        salamPembuka = `Halo Kak *${order.Nama_Pelanggan}*, cucian Anda di *${outletName}* sudah *SELESAI* dan siap diambil! 🎉`;
-      } else if (order.Status_Pengerjaan === 'Diproses') {
-        salamPembuka = `Halo Kak *${order.Nama_Pelanggan}*, cucian Anda di *${outletName}* sedang dalam tahap *DIPROSES*. 🧺`;
-      } else if (order.Status_Pengerjaan === 'Diambil') {
-        salamPembuka = `Halo Kak *${order.Nama_Pelanggan}*, terima kasih telah menggunakan jasa *${outletName}*. Berikut ringkasan nota cucian Anda: 🙏`;
-      } else {
-        salamPembuka = `Halo Kak *${order.Nama_Pelanggan}*, pesanan laundry Anda telah kami *TERIMA* di *${outletName}*. 🧾`;
-      }
-
-      // Rincian status pembayaran, kekurangan, atau sisa kembalian
-      let infoUangLine = `• Status Bayar: *${order.Status_Kembalian}*`;
-      const selisih = Number(order.Selisih_Uang) || 0;
-      if (order.Status_Kembalian === 'Kurang Bayar') {
-        infoUangLine += `\n• Kekurangan Pembayaran: *${formatRupiah(selisih)}*`;
-      } else if (order.Status_Kembalian === 'Belum Bayar') {
-        const due = selisih > 0 ? selisih : Number(order.Total_Tagihan) || 0;
-        infoUangLine += `\n• Tagihan Belum Dibayar: *${formatRupiah(due)}*`;
-      } else if (order.Status_Kembalian === 'Kembalian Belum Diberikan') {
-        infoUangLine += `\n• Sisa Kembalian Anda (Belum Diberikan): *${formatRupiah(selisih)}*`;
-      }
-
-      const trackingLink = buildReceiptShareUrl(order.ID_Nota);
-
-      return `${salamPembuka}
-
-*DETAIL NOTA DIGITAL*
-• No. Nota: *#${order.ID_Nota}*
-• Jenis Layanan: *${order.Jenis_Layanan}*
-${specLine}
-• Status Pengerjaan: *${order.Status_Pengerjaan}*
-• Total Tagihan: *${formatRupiah(order.Total_Tagihan)}*
-• Uang Dibayar: *${formatRupiah(order.Uang_Dibayar)}*
-${infoUangLine}
-
-Cek nota digital & status cucian Anda di sini:
-${trackingLink}
-
-Terima kasih!`;
-    }
-
-    function triggerWhatsAppSend(orderId) {
+    function openWaModal(orderId) {
       const order = orders.find((o) => o.ID_Nota === orderId);
       if (!order) return;
 
-      const waPhone = formatPhoneWA(order.No_WA);
-      const message = buildWhatsAppMessage(order);
-      const waUrl = `https://wa.me/${waPhone}?text=${encodeURIComponent(message)}`;
+      const outletName = settings.outletName || CONFIG_LAUNDRY.NAMA_LAUNDRY;
+      const outletAddr = settings.address ? `\nAlamat: ${settings.address}` : '';
+      const isKiloan = Number(order.Berat_Kg) > 0;
+      const rincian = isKiloan ? `${order.Jenis_Layanan} (${order.Berat_Kg} kg)` : `${order.Jenis_Layanan}${order.Catatan ? ' - ' + order.Catatan : ''}`;
+
+      let statusBayarText = order.Status_Kembalian;
+      if (order.Status_Kembalian === 'Kurang Bayar') {
+        statusBayarText = `Kurang Bayar (${formatRupiah(order.Selisih_Uang)})`;
+      } else if (order.Status_Kembalian === 'Kembalian Belum Diberikan') {
+        statusBayarText = `Lunas (Ada Sisa Kembalian ${formatRupiah(order.Selisih_Uang)})`;
+      }
+
+      // Link nota pelanggan mengarah ke laman nota toko ini (pelanggan langsung melihat nota tanpa perlu PIN)
+      const baseUrl = `${window.location.origin}${window.location.pathname}`;
+      const activeUrl = getActiveScriptUrl();
+      const dbQuery = activeUrl ? `&db=${encodeURIComponent(encodeStoreParam(activeUrl))}` : '';
+      const receiptLink = `${baseUrl}?nota=${encodeURIComponent(order.ID_Nota)}${dbQuery}`;
+
+      const message =
+        `Halo Kak *${order.Nama_Pelanggan}*,\n` +
+        `Berikut nota digital cucian Anda di *${outletName}*:${outletAddr}\n\n` +
+        `• No. Nota: *#${order.ID_Nota}*\n` +
+        `• Layanan: ${rincian}\n` +
+        `• Status Cucian: *${order.Status_Pengerjaan}*\n` +
+        `• Total Tagihan: *${formatRupiah(order.Total_Tagihan)}*\n` +
+        `• Uang Dibayar: ${formatRupiah(order.Uang_Dibayar)}\n` +
+        `• Status Bayar: *${statusBayarText}*\n\n` +
+        `Cek status & rincian nota Anda secara langsung di link berikut:\n${receiptLink}\n\n` +
+        `Terima kasih!`;
 
       currentModalWaText = message;
+      const waPhone = formatPhoneWA(order.No_WA);
 
       document.getElementById('wa-modal-recipient').textContent = `Tujuan: ${order.Nama_Pelanggan} (${waPhone})`;
       document.getElementById('wa-message-preview').textContent = message;
-      document.getElementById('wa-direct-link').href = waUrl;
+      document.getElementById('wa-direct-link').href = `https://wa.me/${waPhone}?text=${encodeURIComponent(message)}`;
 
       const modal = document.getElementById('wa-modal');
       modal.classList.remove('hidden');
@@ -1693,70 +1535,77 @@ Terima kasih!`;
       modal.classList.remove('flex');
     }
 
-    function copyWaMessage() {
-      if (!currentModalWaText) return;
-      const textarea = document.createElement('textarea');
-      textarea.value = currentModalWaText;
-      textarea.style.position = 'fixed';
-      textarea.style.opacity = '0';
-      document.body.appendChild(textarea);
-      textarea.select();
+    async function copyWaMessage() {
       try {
-        document.execCommand('copy');
-        showToast('Teks pesan WhatsApp berhasil disalin!');
-      } catch (err) {
+        await navigator.clipboard.writeText(currentModalWaText);
+        showToast('Teks nota berhasil disalin!');
+      } catch (e) {
         showToast('Gagal menyalin teks', 'error');
       }
-      document.body.removeChild(textarea);
     }
 
     // =========================================================
-    // PENGATURAN OUTLET, PIN, TARIF, & GOOGLE SHEETS
+    // PENGATURAN & KONEKSI GOOGLE SHEETS (KOSONG SAAT AWAL)
     // =========================================================
     function populateSettingsForm() {
       document.getElementById('setting-script-url').value = settings.scriptUrl || '';
-      document.getElementById('setting-outlet-name').value = settings.outletName || CONFIG_LAUNDRY.NAMA_LAUNDRY || 'SmartLaundry';
-      document.getElementById('setting-admin-pin').value = settings.adminPin || CONFIG_LAUNDRY.PIN_ADMIN_DEFAULT || '1234';
-      document.getElementById('setting-admin-wa').value = settings.adminWa || CONFIG_LAUNDRY.NO_WA_ADMIN || '6281234567890';
-      document.getElementById('setting-outlet-address').value = settings.address || CONFIG_LAUNDRY.ALAMAT_LAUNDRY || 'Jl. Melati No. 12';
+      document.getElementById('setting-outlet-name').value = settings.outletName || '';
+      document.getElementById('setting-admin-pin').value = settings.adminPin || '';
+      document.getElementById('setting-admin-wa').value = settings.adminWa || '';
+      document.getElementById('setting-outlet-address').value = settings.address || '';
 
-      document.getElementById('rate-cuci_mamel').value = settings.rates.cuci_mamel;
-      document.getElementById('rate-cuci_kering').value = settings.rates.cuci_kering;
-      document.getElementById('rate-cuci_setrika').value = settings.rates.cuci_setrika;
-      document.getElementById('rate-setrika').value = settings.rates.setrika;
-      document.getElementById('rate-tikar_default').value = settings.rates.tikar_default;
-      updateConnectionBadgeUI();
+      document.getElementById('rate-cuci_mamel').value = settings.rates.cuci_mamel !== '' ? settings.rates.cuci_mamel : '';
+      document.getElementById('rate-cuci_kering').value = settings.rates.cuci_kering !== '' ? settings.rates.cuci_kering : '';
+      document.getElementById('rate-cuci_setrika').value = settings.rates.cuci_setrika !== '' ? settings.rates.cuci_setrika : '';
+      document.getElementById('rate-setrika').value = settings.rates.setrika !== '' ? settings.rates.setrika : '';
+      document.getElementById('rate-tikar_default').value = settings.rates.tikar_default !== '' ? settings.rates.tikar_default : '';
     }
 
     async function saveAndTestSheetsUrl() {
-      const urlVal = document.getElementById('setting-script-url').value.trim();
-      settings.scriptUrl = urlVal;
-      persistSettingsLocal();
-      updateConnectionBadgeUI();
+      const urlInput = document.getElementById('setting-script-url').value.trim();
 
-      if (!isSheetsConnected()) {
-        showToast('URL dikosongkan. Aplikasi berjalan di Mode Demo Lokal.', 'warning');
+      if (!urlInput) {
+        showToast('Tempel URL Google Apps Script terlebih dahulu!', 'error');
+        return;
+      }
+
+      if (!urlInput.startsWith('https://script.google.com/')) {
+        showToast('URL harus diawali https://script.google.com/...', 'error');
         return;
       }
 
       const btn = document.getElementById('btn-save-sheets');
+      const originalHtml = btn.innerHTML;
       btn.disabled = true;
-      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i><span>Menghubungkan & Memuat Data...</span>`;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i><span>Menghubungkan...</span>`;
 
-      await syncFromGoogleSheets(true);
+      settings.scriptUrl = urlInput;
+      sharedStoreScriptUrl = '';
+      persistSessionState();
+
+      const ok = await syncFromGoogleSheets(true);
+      if (ok) {
+        updateConnectionBadgeUI();
+        applyOutletBranding();
+        populateSettingsForm();
+      } else {
+        settings.scriptUrl = '';
+        persistSessionState();
+        updateConnectionBadgeUI();
+      }
 
       btn.disabled = false;
-      btn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i><span>Simpan URL</span>`;
+      btn.innerHTML = originalHtml;
     }
 
-async function pushSettingsToGoogleSheets() {
+    async function pushSettingsToGoogleSheets() {
       const activeUrl = getActiveScriptUrl();
-      if (!activeUrl) return;
+      if (!activeUrl) return false;
 
       const payloadData = {
         Nama_Outlet: settings.outletName,
-        Slogan: settings.slogan || CONFIG_LAUNDRY.SLOGAN_LAUNDRY || 'Cepat, Bersih & Wangi',
-        Alamat_Outlet: settings.address || CONFIG_LAUNDRY.ALAMAT_LAUNDRY || 'Jl. Melati No. 12',
+        Slogan: settings.slogan || 'Cepat, Bersih & Wangi',
+        Alamat_Outlet: settings.address,
         No_WA_Admin: settings.adminWa,
         PIN_Admin: settings.adminPin,
         Cuci_Mamel: settings.rates.cuci_mamel,
@@ -1775,20 +1624,25 @@ async function pushSettingsToGoogleSheets() {
             data: payloadData
           })
         });
+        return true;
       } catch (err) {
         console.error('Gagal menyimpan pengaturan ke Google Sheets:', err);
-        showToast('Tersimpan lokal, namun gagal sinkron pengaturan ke Sheets', 'warning');
+        return false;
       }
     }
 
     async function saveAppSettings(event) {
       event.preventDefault();
 
-      const newOutlet = document.getElementById('setting-outlet-name').value.trim() || CONFIG_LAUNDRY.NAMA_LAUNDRY || 'SmartLaundry';
-      const newPin = document.getElementById('setting-admin-pin').value.trim() || CONFIG_LAUNDRY.PIN_ADMIN_DEFAULT || '1234';
-      const newAdminWa = document.getElementById('setting-admin-wa').value.trim() || CONFIG_LAUNDRY.NO_WA_ADMIN || '6281234567890';
-      const addressInput = document.getElementById('setting-outlet-address');
-      const newAddress = (addressInput ? addressInput.value.trim() : '') || settings.address || CONFIG_LAUNDRY.ALAMAT_LAUNDRY || 'Jl. Melati No. 12';
+      if (!isSheetsConnected()) {
+        showToast('Hubungkan URL Google Apps Script terlebih dahulu di bagian atas!', 'warning');
+        return;
+      }
+
+      const newOutlet = document.getElementById('setting-outlet-name').value.trim();
+      const newPin = document.getElementById('setting-admin-pin').value.trim();
+      const newAdminWa = formatPhoneWA(document.getElementById('setting-admin-wa').value.trim());
+      const newAddress = document.getElementById('setting-outlet-address').value.trim();
 
       settings.outletName = newOutlet;
       settings.adminPin = newPin;
@@ -1802,38 +1656,17 @@ async function pushSettingsToGoogleSheets() {
         tikar_default: Number(document.getElementById('rate-tikar_default').value) || 0
       };
 
-      persistSettingsLocal();
+      persistSessionState();
       applyOutletBranding();
       renderServiceSelector();
-      await pushSettingsToGoogleSheets();
-      showToast('Pengaturan outlet, alamat, WA, PIN & tarif tersimpan ke Google Sheets!');
-    }
-    function handleResetDemoData() {
-      const btn = document.getElementById('btn-reset-demo');
-      if (!resetDemoConfirmState) {
-        resetDemoConfirmState = true;
-        btn.textContent = 'Ketuk sekali lagi untuk konfirmasi reset data contoh';
-        btn.classList.replace('bg-slate-100', 'bg-rose-100');
-        btn.classList.replace('text-slate-600', 'text-rose-700');
-        setTimeout(() => {
-          resetDemoConfirmState = false;
-          btn.textContent = 'Reset Data Contoh Awal';
-          btn.classList.replace('bg-rose-100', 'bg-slate-100');
-          btn.classList.replace('text-rose-700', 'text-slate-600');
-        }, 3500);
-        return;
+
+      const saved = await pushSettingsToGoogleSheets();
+      if (saved) {
+        showToast('Profil outlet, alamat, WA, PIN & tarif tersimpan ke Google Sheets!');
+      } else {
+        showToast('Gagal menyimpan ke Google Sheets. Periksa koneksi internet.', 'error');
       }
-
-      orders = JSON.parse(JSON.stringify(INITIAL_SAMPLE_ORDERS));
-      persistOrdersLocal();
-      renderAdminOrders();
-      renderPublicQuickChips();
-      resetDemoConfirmState = false;
-      btn.textContent = 'Reset Data Contoh Awal';
-      btn.classList.replace('bg-rose-100', 'bg-slate-100');
-      btn.classList.replace('text-rose-700', 'text-slate-600');
-      showToast('4 data contoh awal berhasil dipulihkan!');
     }
 
-    // Jalankan inisialisasi saat halaman dimuat
-    window.addEventListener('DOMContentLoaded', initApp);
+    // Jalankan Aplikasi saat DOM Siap
+    document.addEventListener('DOMContentLoaded', initApp);
