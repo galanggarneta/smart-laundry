@@ -232,7 +232,7 @@ smart-laundry/
 ## 💡 Catatan Pembuat & Riwayat Pengembangan
 
 ### Orisinalitas Ide & Proses Deployment
-Seluruh gagasan, konsep alur kerja, logika bisnis, serta fitur-fitur di dalam aplikasi **SmartLaundry** ini merupakan **100% ide murni dari saya (pengembang proyek)**, bukan gagasan dari AI. Mulai dari konsep isolasi *Mode Demo* yang bersih, penyatuan laman nota pelanggan dengan gerbang login pengusaha, pencatatan detail selisih pembayaran dan uang kembalian tertahan, hingga penyimpanan pengaturan lintas perangkat di Google Sheets lahir sepenuhnya dari pemikiran dan kebutuhan nyata pembuat sendiri.
+Seluruh gagasan, konsep alur kerja, logika bisnis, serta fitur-fitur di dalam aplikasi **SmartLaundry** ini merupakan **100% ide murni dari saya (pengembang proyek)**, bukan gagasan dari AI. Mulai dari konsep isolasi *Mode Demo* yang bersih, penyatuan laman nota pelanggan dengan gerbang login pengusaha, pencatatan detail selisih pembayaran dan uang kembalian tertahan, hingga penyimpanan pengaturan lintas perangkat di Google Sheets lahir sepenuhnya dari pemikiran dan kebutuhan nyata saya sendiri.
 
 Dalam proses penyusunannya, AI hanya digunakan sebagai alat bantu untuk menerjemahkan gagasan tersebut ke dalam bentuk sintaks kode. Selain itu, kode aplikasi ini juga melalui beberapa penyesuaian dan penyempurnaan kecil secara bertahap pada setiap proses *deploy* (baik di GitHub Pages maupun Google Apps Script) agar sistem berjalan stabil dan sesuai dengan kebutuhan operasional di lapangan.
 
