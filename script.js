@@ -339,8 +339,14 @@
         const response = await fetch(fetchUrl, { method: 'GET' });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
-        const result = await response.json();
-        const rows = Array.isArray(result) ? result : Array.isArray(result.data) ? result.data : null;
+          const result = await response.json();
+        const rows = Array.isArray(result)
+          ? result
+          : Array.isArray(result.orders)
+          ? result.orders
+          : Array.isArray(result.data)
+          ? result.data
+          : null;
 
         if (!rows) {
           throw new Error('Format respon JSON dari Apps Script tidak sesuai');
@@ -348,9 +354,29 @@
 
         orders = rows.map(normalizeSheetRow).filter((r) => r.ID_Nota);
         persistOrdersLocal();
+
+        // Muat Pengaturan (Nama, Alamat, WA, PIN, Harga Jasa) dari Google Sheets jika tersedia
+        if (result.settings && typeof result.settings === 'object') {
+          const s = result.settings;
+          if (s.Nama_Outlet) settings.outletName = String(s.Nama_Outlet);
+          if (s.Slogan) settings.slogan = String(s.Slogan);
+          if (s.Alamat_Outlet) settings.address = String(s.Alamat_Outlet);
+          if (s.No_WA_Admin) settings.adminWa = String(s.No_WA_Admin);
+          if (s.PIN_Admin) settings.adminPin = String(s.PIN_Admin);
+          if (s.Cuci_Mamel !== undefined && s.Cuci_Mamel !== '') settings.rates.cuci_mamel = Number(s.Cuci_Mamel) || 0;
+          if (s.Cuci_Kering !== undefined && s.Cuci_Kering !== '') settings.rates.cuci_kering = Number(s.Cuci_Kering) || 0;
+          if (s.Cuci_Setrika !== undefined && s.Cuci_Setrika !== '') settings.rates.cuci_setrika = Number(s.Cuci_Setrika) || 0;
+          if (s.Setrika !== undefined && s.Setrika !== '') settings.rates.setrika = Number(s.Setrika) || 0;
+          if (s.Tikar_Default !== undefined && s.Tikar_Default !== '') settings.rates.tikar_default = Number(s.Tikar_Default) || 0;
+
+          persistSettingsLocal();
+          applyOutletBranding();
+          populateSettingsForm();
+          renderServiceSelector();
+        }
+
         renderAdminOrders();
         renderPublicQuickChips();
-
         if (showFeedback) {
           showToast(`Berhasil memuat ${orders.length} data dari Google Sheets!`);
         }
@@ -1723,13 +1749,46 @@ Terima kasih!`;
       btn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i><span>Simpan URL</span>`;
     }
 
-    function saveAppSettings(event) {
+async function pushSettingsToGoogleSheets() {
+      const activeUrl = getActiveScriptUrl();
+      if (!activeUrl) return;
+
+      const payloadData = {
+        Nama_Outlet: settings.outletName,
+        Slogan: settings.slogan || CONFIG_LAUNDRY.SLOGAN_LAUNDRY || 'Cepat, Bersih & Wangi',
+        Alamat_Outlet: settings.address || CONFIG_LAUNDRY.ALAMAT_LAUNDRY || 'Jl. Melati No. 12',
+        No_WA_Admin: settings.adminWa,
+        PIN_Admin: settings.adminPin,
+        Cuci_Mamel: settings.rates.cuci_mamel,
+        Cuci_Kering: settings.rates.cuci_kering,
+        Cuci_Setrika: settings.rates.cuci_setrika,
+        Setrika: settings.rates.setrika,
+        Tikar_Default: settings.rates.tikar_default
+      };
+
+      try {
+        await fetch(activeUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            action: 'saveSettings',
+            data: payloadData
+          })
+        });
+      } catch (err) {
+        console.error('Gagal menyimpan pengaturan ke Google Sheets:', err);
+        showToast('Tersimpan lokal, namun gagal sinkron pengaturan ke Sheets', 'warning');
+      }
+    }
+
+    async function saveAppSettings(event) {
       event.preventDefault();
 
       const newOutlet = document.getElementById('setting-outlet-name').value.trim() || CONFIG_LAUNDRY.NAMA_LAUNDRY || 'SmartLaundry';
       const newPin = document.getElementById('setting-admin-pin').value.trim() || CONFIG_LAUNDRY.PIN_ADMIN_DEFAULT || '1234';
       const newAdminWa = document.getElementById('setting-admin-wa').value.trim() || CONFIG_LAUNDRY.NO_WA_ADMIN || '6281234567890';
-      const newAddress = document.getElementById('setting-outlet-address').value.trim() || CONFIG_LAUNDRY.ALAMAT_LAUNDRY || 'Jl. Melati No. 12';
+      const addressInput = document.getElementById('setting-outlet-address');
+      const newAddress = (addressInput ? addressInput.value.trim() : '') || settings.address || CONFIG_LAUNDRY.ALAMAT_LAUNDRY || 'Jl. Melati No. 12';
 
       settings.outletName = newOutlet;
       settings.adminPin = newPin;
@@ -1746,9 +1805,9 @@ Terima kasih!`;
       persistSettingsLocal();
       applyOutletBranding();
       renderServiceSelector();
-      showToast('Pengaturan outlet, PIN & tarif berhasil disimpan!');
+      await pushSettingsToGoogleSheets();
+      showToast('Pengaturan outlet, alamat, WA, PIN & tarif tersimpan ke Google Sheets!');
     }
-
     function handleResetDemoData() {
       const btn = document.getElementById('btn-reset-demo');
       if (!resetDemoConfirmState) {
